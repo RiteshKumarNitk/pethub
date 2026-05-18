@@ -8,7 +8,7 @@ export async function sendOTP(phone: string, otp: string) {
       );
       
       await client.messages.create({
-        body: `Your Pet Hub OTP is: ${otp}`,
+        body: `Your PawStore OTP is: ${otp}`,
         from: process.env.TWILIO_FROM_NUMBER,
         to: phone,
       });
@@ -23,7 +23,7 @@ export async function sendOTP(phone: string, otp: string) {
       const data = JSON.stringify({
         authkey: process.env.MSG91_API_KEY,
         mobiles: phone.replace("+", ""),
-        message: `Your Pet Hub OTP is: ${otp}`,
+        message: `Your PawStore OTP is: ${otp}`,
         sender: "PETHUB",
       });
       

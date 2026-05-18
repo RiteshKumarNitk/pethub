@@ -1,6 +1,6 @@
-# Pet Hub
+# PawStore 🐾
 
-A full-stack pet platform with Next.js backend and Flutter mobile app.
+A full-stack pet e-commerce platform for premium pet food, accessories, and care products, with expert pet care guides. Built with Next.js backend and Flutter mobile app.
 
 ## Project Structure
 
@@ -43,6 +43,12 @@ npm run db:generate
 npm run db:push
 ```
 
+### Seed Data
+
+```bash
+npm run db:seed
+```
+
 ### Run Development Server
 
 ```bash
@@ -64,14 +70,6 @@ cd flutter_app
 flutter pub get
 ```
 
-### Environment Variables
-
-Create `lib/config/env.dart` or use `--dart-define` flags:
-- `NEXT_PUBLIC_API_URL` - Your backend API URL
-- `RAZORPAY_KEY_ID` - Your Razorpay key
-- `CLOUDINARY_CLOUD_NAME` - Your Cloudinary cloud name
-- `CLOUDINARY_UPLOAD_PRESET` - Cloudinary upload preset
-
 ### Run App
 
 ```bash
@@ -84,41 +82,21 @@ flutter run
 - `POST /api/auth/send-otp` - Send OTP to phone
 - `POST /api/auth/verify-otp` - Verify OTP, returns JWT
 
-### Pets
-- `GET /api/pets` - List user's pets
-- `POST /api/pets` - Create pet
-- `GET /api/pets/[id]` - Pet details with vaccinations
-- `POST /api/pets/[id]/vaccinations` - Add vaccination
-
 ### Products
 - `GET /api/products` - List products (optional `?category=`)
 - `GET /api/products/[id]` - Product details
 
 ### Orders
 - `GET /api/orders` - User's order history
-- `POST /api/orders` - Create order
+- `POST /api/orders` - Create order with Razorpay
 - `POST /api/orders/verify` - Verify Razorpay payment
 
-### Bookings
-- `GET /api/bookings` - User's bookings
-- `POST /api/bookings` - Create booking, returns WhatsApp deeplink
-
-### Listings
-- `GET /api/listings` - Approved pet listings
-- `POST /api/listings` - Submit listing
-- `PATCH /api/admin/listings/[id]` - Admin: approve/reject
+### Blog
+- `GET /api/blogs` - Published blog posts
+- `GET /api/blogs/[slug]` - Single blog post
 
 ### Home
-- `GET /api/home` - Featured products + shop pets
-
-## Key Rules
-
-1. **No buy buttons for pets** - Only "Request Adoption" via WhatsApp
-2. **Listings require approval** - `is_approved=false` by default
-3. **Shop listings first** - `source='shop'` appears before `source='user'`
-4. **Bookings via WhatsApp** - No calendar API in v1
-5. **No in-app chat** - All communication via WhatsApp deeplinks
-6. **Admin role required** - Admin routes check `role='admin'` from JWT
+- `GET /api/home` - Featured products
 
 ## Tech Stack
 

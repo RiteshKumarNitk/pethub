@@ -1,10 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pet_hub/api/api_service.dart';
-import 'package:pet_hub/models/user.dart';
-import 'package:pet_hub/models/pet.dart';
-import 'package:pet_hub/models/product.dart';
-import 'package:pet_hub/models/booking.dart';
-import 'package:pet_hub/models/listing.dart';
+import 'package:pawstore/api/api_service.dart';
+import 'package:pawstore/models/user.dart';
+import 'package:pawstore/models/product.dart';
 
 final apiServiceProvider = Provider<ApiService>((ref) => ApiService());
 
@@ -79,14 +76,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 }
 
-final petsProvider = FutureProvider<List<Pet>>((ref) async {
-  final api = ref.read(apiServiceProvider);
-  final response = await api.getPets();
-  return (response.data['pets'] as List)
-      .map((json) => Pet.fromJson(json))
-      .toList();
-});
-
 final homeDataProvider = FutureProvider<HomeData>((ref) async {
   final api = ref.read(apiServiceProvider);
   final response = await api.getHomeData();
@@ -95,20 +84,14 @@ final homeDataProvider = FutureProvider<HomeData>((ref) async {
 
 class HomeData {
   final List<Product> featuredProducts;
-  final List<PetListing> shopPets;
 
-  HomeData({required this.featuredProducts, required this.shopPets});
+  HomeData({required this.featuredProducts});
 
   factory HomeData.fromJson(Map<String, dynamic> json) {
     return HomeData(
       featuredProducts:
           (json['featuredProducts'] as List?)
               ?.map((e) => Product.fromJson(e))
-              .toList() ??
-          [],
-      shopPets:
-          (json['shopPets'] as List?)
-              ?.map((e) => PetListing.fromJson(e))
               .toList() ??
           [],
     );
@@ -179,26 +162,10 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
   double get total => state.fold(0, (sum, item) => sum + item.total);
 }
 
-final bookingsProvider = FutureProvider<List<Booking>>((ref) async {
-  final api = ref.read(apiServiceProvider);
-  final response = await api.getBookings();
-  return (response.data['bookings'] as List)
-      .map((json) => Booking.fromJson(json))
-      .toList();
-});
-
 final ordersProvider = FutureProvider<List<Order>>((ref) async {
   final api = ref.read(apiServiceProvider);
   final response = await api.getOrders();
   return (response.data['orders'] as List)
       .map((json) => Order.fromJson(json))
-      .toList();
-});
-
-final listingsProvider = FutureProvider<List<PetListing>>((ref) async {
-  final api = ref.read(apiServiceProvider);
-  final response = await api.getListings();
-  return (response.data['listings'] as List)
-      .map((json) => PetListing.fromJson(json))
       .toList();
 });

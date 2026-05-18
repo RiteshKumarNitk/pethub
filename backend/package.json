@@ -1,5 +1,5 @@
 {
-  "name": "pet-hub-backend",
+  "name": "pawstore-backend",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -8,9 +8,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "drizzle-kit generate:pg",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push:pg",
+    "db:seed": "npx tsx src/db/seed.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.0",

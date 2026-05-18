@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { products, petListings } from "@/db/schema";
+import { products } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 
 export async function GET() {
@@ -12,16 +12,8 @@ export async function GET() {
       .orderBy(desc(products.id))
       .limit(10);
     
-    const shopPets = await db
-      .select()
-      .from(petListings)
-      .where(eq(petListings.source, "shop"))
-      .orderBy(desc(petListings.createdAt))
-      .limit(6);
-    
     return NextResponse.json({
       featuredProducts,
-      shopPets,
     });
   } catch (error) {
     console.error("Home data error:", error);

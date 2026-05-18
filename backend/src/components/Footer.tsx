@@ -1,66 +1,149 @@
 import Link from "next/link";
 
+const shopLinks = [
+  { label: "Pet Food", href: "/shop?category=Food" },
+  { label: "Accessories", href: "/shop?category=Accessories" },
+  { label: "Grooming", href: "/shop?category=Care%20%26%20Hygiene" },
+  { label: "Toys", href: "/shop?category=Toys" },
+  { label: "Health Products", href: "/shop?category=Health" },
+  { label: "All Products", href: "/shop" },
+];
+
+const policyLinks = [
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Use", href: "/terms" },
+  { label: "Return Policy", href: "/return-policy" },
+  { label: "Shipping Policy", href: "/shipping-policy" },
+  { label: "Cancellation Policy", href: "/cancellation-policy" },
+];
+
+const usefulLinks = [
+  { label: "About Us", href: "/about" },
+  { label: "Contact Us", href: "/contact" },
+  { label: "Store Locator", href: "/store-locator" },
+  { label: "Pet Care Guides", href: "/blog" },
+  { label: "FAQ", href: "/faq" },
+];
+
+const supportLinks = [
+  { label: "WhatsApp: +91 98765 43210", href: "https://wa.me/919876543210" },
+  { label: "Email: help@pawstore.in", href: "mailto:help@pawstore.in" },
+  { label: "Call: +91 98765 43210", href: "tel:+919876543210" },
+];
+
 export default function Footer() {
   return (
-    <footer className="bg-[hsl(var(--secondary))] text-white pt-16 pb-8">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-          <div className="col-span-1 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 bg-[hsl(var(--primary))] rounded-lg flex items-center justify-center">
-                <span className="text-white text-lg font-bold">P</span>
+    <footer className="bg-gray-900 text-white">
+      {/* Main Footer */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+
+          {/* Brand Column */}
+          <div className="lg:col-span-1">
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">P</span>
               </div>
-              <span className="text-xl font-bold tracking-tight text-white">
-                Pet<span className="text-[hsl(var(--primary))]">Hub</span>
+              <span className="text-lg font-bold text-white">
+                Paw<span className="text-orange-400">Store</span>
               </span>
             </Link>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Making pet care simpler, smarter, and more compassionate. Your pet's wellbeing is our top priority.
+            <p className="text-gray-400 text-sm leading-relaxed mb-4">
+              India&apos;s trusted online pet store for premium food, accessories, and care products. Delivering happiness to pets and their parents.
             </p>
-          </div>
-
-          <div>
-            <h4 className="font-bold mb-6">Explore</h4>
-            <ul className="space-y-4 text-sm text-gray-400">
-              <li><Link href="/marketplace" className="hover:text-white transition-colors">Adopt a Pet</Link></li>
-              <li><Link href="/shop" className="hover:text-white transition-colors">Pet Shop</Link></li>
-              <li><Link href="/services" className="hover:text-white transition-colors">Services</Link></li>
-              <li><Link href="/blog" className="hover:text-white transition-colors">Pet Care Tips</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-bold mb-6">Support</h4>
-            <ul className="space-y-4 text-sm text-gray-400">
-              <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
-              <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
-              <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Use</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-bold mb-6">Connect</h4>
-            <div className="flex gap-4 mb-6">
-              <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[hsl(var(--primary))] transition-colors cursor-pointer">
-                <span className="text-lg">f</span>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-gray-800 hover:bg-orange-500 rounded-lg flex items-center justify-center text-gray-400 hover:text-white transition-colors cursor-pointer text-sm font-medium">
+                f
               </div>
-              <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[hsl(var(--primary))] transition-colors cursor-pointer">
-                <span className="text-lg">t</span>
+              <div className="w-9 h-9 bg-gray-800 hover:bg-orange-500 rounded-lg flex items-center justify-center text-gray-400 hover:text-white transition-colors cursor-pointer text-sm font-medium">
+                t
               </div>
-              <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[hsl(var(--primary))] transition-colors cursor-pointer">
-                <span className="text-lg">i</span>
+              <div className="w-9 h-9 bg-gray-800 hover:bg-orange-500 rounded-lg flex items-center justify-center text-gray-400 hover:text-white transition-colors cursor-pointer text-sm font-medium">
+                i
+              </div>
+              <div className="w-9 h-9 bg-gray-800 hover:bg-orange-500 rounded-lg flex items-center justify-center text-gray-400 hover:text-white transition-colors cursor-pointer text-sm font-medium">
+                y
               </div>
             </div>
-            <p className="text-xs text-gray-500">Subscribe to our newsletter for updates</p>
           </div>
-        </div>
 
-        <div className="border-t border-white/10 pt-8 flex flex-col md:row items-center justify-between gap-4">
-          <p className="text-xs text-gray-500">© 2026 PetHub. All rights reserved.</p>
-          <p className="text-xs text-gray-500 flex gap-4">
-            <span>Made with ❤️ for Pets</span>
-          </p>
+          {/* Online Shopping */}
+          <div>
+            <h4 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">Online Shopping</h4>
+            <ul className="space-y-2.5">
+              {shopLinks.map((link, idx) => (
+                <li key={idx}>
+                  <Link href={link.href} className="text-sm text-gray-400 hover:text-orange-400 transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Customer Policies */}
+          <div>
+            <h4 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">Customer Policies</h4>
+            <ul className="space-y-2.5">
+              {policyLinks.map((link, idx) => (
+                <li key={idx}>
+                  <Link href={link.href} className="text-sm text-gray-400 hover:text-orange-400 transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Useful Links */}
+          <div>
+            <h4 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">Useful Links</h4>
+            <ul className="space-y-2.5">
+              {usefulLinks.map((link, idx) => (
+                <li key={idx}>
+                  <Link href={link.href} className="text-sm text-gray-400 hover:text-orange-400 transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Customer Care */}
+          <div>
+            <h4 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">Customer Care</h4>
+            <ul className="space-y-2.5">
+              {supportLinks.map((link, idx) => (
+                <li key={idx}>
+                  <a href={link.href} className="text-sm text-gray-400 hover:text-orange-400 transition-colors">
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-6">
+              <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">We Accept</h5>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="bg-gray-800 text-gray-300 text-[10px] font-semibold px-3 py-1.5 rounded">Visa</span>
+                <span className="bg-gray-800 text-gray-300 text-[10px] font-semibold px-3 py-1.5 rounded">Mastercard</span>
+                <span className="bg-gray-800 text-gray-300 text-[10px] font-semibold px-3 py-1.5 rounded">UPI</span>
+                <span className="bg-gray-800 text-gray-300 text-[10px] font-semibold px-3 py-1.5 rounded">COD</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="border-t border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-gray-500">© 2026 PawStore. All rights reserved.</p>
+          <div className="flex items-center gap-4 text-xs text-gray-500">
+            <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-gray-300 transition-colors">Terms</Link>
+            <Link href="/sitemap" className="hover:text-gray-300 transition-colors">Sitemap</Link>
+          </div>
         </div>
       </div>
     </footer>

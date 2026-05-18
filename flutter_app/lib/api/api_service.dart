@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:pet_hub/utils/constants.dart';
+import 'package:pawstore/utils/constants.dart';
 
 class ApiService {
   late final Dio _dio;
@@ -61,22 +61,6 @@ class ApiService {
     );
   }
 
-  Future<Response> getPets() async {
-    return await _dio.get('/api/pets');
-  }
-
-  Future<Response> createPet(Map<String, dynamic> data) async {
-    return await _dio.post('/api/pets', data: data);
-  }
-
-  Future<Response> getPetDetails(int id) async {
-    return await _dio.get('/api/pets/$id');
-  }
-
-  Future<Response> addVaccination(int petId, Map<String, dynamic> data) async {
-    return await _dio.post('/api/pets/$petId/vaccinations', data: data);
-  }
-
   Future<Response> getProducts({String? category}) async {
     final queryParams = category != null ? {'category': category} : null;
     return await _dio.get('/api/products', queryParameters: queryParams);
@@ -96,23 +80,6 @@ class ApiService {
 
   Future<Response> getOrders() async {
     return await _dio.get('/api/orders');
-  }
-
-  Future<Response> getBookings() async {
-    return await _dio.get('/api/bookings');
-  }
-
-  Future<Response> createBooking(Map<String, dynamic> data) async {
-    return await _dio.post('/api/bookings', data: data);
-  }
-
-  Future<Response> getListings({String? source}) async {
-    final queryParams = source != null ? {'source': source} : null;
-    return await _dio.get('/api/listings', queryParameters: queryParams);
-  }
-
-  Future<Response> createListing(Map<String, dynamic> data) async {
-    return await _dio.post('/api/listings', data: data);
   }
 
   Future<Response> getHomeData() async {

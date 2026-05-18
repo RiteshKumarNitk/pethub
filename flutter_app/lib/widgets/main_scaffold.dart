@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class MainScaffold extends StatelessWidget {
   final Widget child;
@@ -24,16 +25,6 @@ class MainScaffold extends StatelessWidget {
             label: 'Shop',
           ),
           NavigationDestination(
-            icon: Icon(Icons.pets_outlined),
-            selectedIcon: Icon(Icons.pets),
-            label: 'Market',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_today_outlined),
-            selectedIcon: Icon(Icons.calendar_today),
-            label: 'Book',
-          ),
-          NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
             label: 'Profile',
@@ -47,9 +38,7 @@ class MainScaffold extends StatelessWidget {
     final String location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith('/home')) return 0;
     if (location.startsWith('/shop')) return 1;
-    if (location.startsWith('/marketplace')) return 2;
-    if (location.startsWith('/bookings')) return 3;
-    if (location.startsWith('/profile')) return 4;
+    if (location.startsWith('/profile')) return 2;
     return 0;
   }
 
@@ -62,12 +51,6 @@ class MainScaffold extends StatelessWidget {
         context.go('/shop');
         break;
       case 2:
-        context.go('/marketplace');
-        break;
-      case 3:
-        context.go('/bookings');
-        break;
-      case 4:
         context.go('/profile');
         break;
     }

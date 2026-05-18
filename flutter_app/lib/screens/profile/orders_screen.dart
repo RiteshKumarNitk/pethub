@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:pet_hub/providers/providers.dart';
+import 'package:pawstore/providers/providers.dart';
 
 class OrdersScreen extends ConsumerWidget {
   const OrdersScreen({super.key});

@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       return {
         productId: item.productId,
         qty: item.qty,
-        unitPrice,
+        unitPrice: unitPrice.toString(),
       };
     });
     
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       .insert(orders)
       .values({
         userId,
-        total,
+        total: total.toString(),
         status: "pending",
         razorpayOrderId: razorpayOrder.id,
       })

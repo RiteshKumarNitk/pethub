@@ -8,7 +8,8 @@ import {
   Settings, 
   LogOut,
   Bell,
-  Loader2
+  Loader2,
+  FileText
 } from "lucide-react";
 import Link from "next/link";
 import { Outfit } from "next/font/google";
@@ -50,17 +51,17 @@ export default function AdminLayout({
                 <div className="w-10 h-10 bg-[hsl(var(--primary))] rounded-xl flex items-center justify-center transform group-hover:rotate-12 transition-transform">
                   <span className="text-white text-xl font-bold">P</span>
                 </div>
-                <span className="text-2xl font-black tracking-tight">Admin<span className="text-[hsl(var(--primary))]">Hub</span></span>
+                <span className="text-2xl font-black tracking-tight">Paw<span className="text-[hsl(var(--primary))]">Store</span></span>
               </Link>
 
               <nav className="space-y-2">
-                {[
-                  { icon: LayoutDashboard, label: "Overview", href: "/admin" },
-                  { icon: ShoppingBag, label: "Listings", href: "/admin/listings" },
-                  { icon: Users, label: "Adoption Leads", href: "/admin/interests" },
-                  { icon: Calendar, label: "Bookings", href: "/admin/bookings" },
-                  { icon: Users, label: "Users", href: "/admin/users" },
-                ].map((item) => (
+                  {[
+                    { icon: LayoutDashboard, label: "Overview", href: "/admin" },
+                    { icon: ShoppingBag, label: "Products", href: "/admin/products" },
+                    { icon: ShoppingBag, label: "Orders", href: "/admin/orders" },
+                    { icon: FileText, label: "Pet Guides (Blog)", href: "/admin/blogs" },
+                    { icon: Users, label: "Users", href: "/admin/users" },
+                  ].map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}

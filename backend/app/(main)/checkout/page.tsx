@@ -62,7 +62,7 @@ export default function CheckoutPage() {
              </div>
              <h1 className="text-4xl font-black text-[hsl(var(--secondary))] mb-4">Order Placed!</h1>
              <p className="text-gray-500 font-medium mb-10 leading-relaxed">
-               Thank you for your purchase. We've sent a confirmation to your email. Max will have his food soon!
+               Thank you for your purchase. We&apos;ve sent a confirmation to your email. Max will have his food soon!
              </p>
              <div className="p-6 bg-gray-50 rounded-3xl text-left space-y-3 mb-10">
                 <div className="flex justify-between text-xs font-black text-gray-400 uppercase tracking-widest">
@@ -74,7 +74,7 @@ export default function CheckoutPage() {
                    <span className="text-[hsl(var(--secondary))] text-green-600">3-4 Business Days</span>
                 </div>
              </div>
-             <Link href="/dashboard" className="btn-primary w-full py-5 block text-lg">Go to Dashboard</Link>
+              <Link href="/shop" className="btn-primary w-full py-5 block text-lg text-center">Continue Shopping</Link>
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">

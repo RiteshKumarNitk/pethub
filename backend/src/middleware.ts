@@ -56,7 +56,7 @@ export async function middleware(request: NextRequest) {
 
   // Handle API route protection (bridging the existing middleware logic)
   if (pathname.startsWith("/api/")) {
-    const PUBLIC_API_PATHS = ["/api/auth", "/api/listings", "/api/products", "/api/bookings"];
+    const PUBLIC_API_PATHS = ["/api/auth", "/api/products", "/api/blogs", "/api/home"];
     const isPublic = PUBLIC_API_PATHS.some(path => pathname.startsWith(path));
     
     if (isPublic && request.method === "GET") {

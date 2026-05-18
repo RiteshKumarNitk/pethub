@@ -21,8 +21,8 @@ export default function AboutPage() {
              Revolutionizing Pet Care in <span className="text-[hsl(var(--primary))]">India</span>
            </h1>
            <p className="text-xl text-gray-500 font-medium leading-relaxed">
-             PetHub was born out of a simple idea: every pet deserves a happy home and professional care. 
-             We are building India's largest trusted ecosystem for pet parents, shelters, and service providers.
+             PawStore was born out of a simple idea: every pet deserves the best food, accessories, and care products. 
+              We are building India&apos;s largest trusted ecosystem for pet parents, shelters, and service providers.
            </p>
         </div>
 

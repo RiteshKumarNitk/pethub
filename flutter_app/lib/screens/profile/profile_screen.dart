@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pet_hub/providers/providers.dart';
+import 'package:pawstore/providers/providers.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -62,23 +62,13 @@ class ProfileScreen extends ConsumerWidget {
             'My Orders',
             () => context.push('/orders'),
           ),
-          _buildMenuItem(
-            context,
-            Icons.pets,
-            'My Listings',
-            () => context.push('/my-listings'),
-          ),
-          _buildMenuItem(
-            context,
-            Icons.calendar_today,
-            'My Bookings',
-            () => context.go('/bookings'),
-          ),
           const Divider(height: 32),
           _buildMenuItem(context, Icons.logout, 'Logout', () async {
             await ref.read(authStateProvider.notifier).logout();
-            if (context.mounted) context.go('/login');
-          }, isDestructive: true),
+            if (context.mounted) {
+              context.go('/login');
+            }
+          }),
         ],
       ),
     );
@@ -88,19 +78,12 @@ class ProfileScreen extends ConsumerWidget {
     BuildContext context,
     IconData icon,
     String title,
-    VoidCallback onTap, {
-    bool isDestructive = false,
-  }) {
+    VoidCallback onTap,
+  ) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: isDestructive ? Colors.red : const Color(0xFFFF6B35),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(color: isDestructive ? Colors.red : null),
-      ),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      leading: Icon(icon, color: const Color(0xFFFF6B35)),
+      title: Text(title),
+      trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
     );
   }

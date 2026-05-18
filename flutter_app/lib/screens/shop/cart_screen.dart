@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
-import 'package:pet_hub/providers/providers.dart';
-import 'package:pet_hub/utils/constants.dart';
+import 'package:pawstore/providers/providers.dart';
+import 'package:pawstore/utils/constants.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -80,7 +80,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         'amount': amount * 100,
         'currency': 'INR',
         'order_id': orderData['razorpayOrderId'],
-        'name': 'Pet Hub',
+        'name': 'PawStore',
         'description': 'Pet products order',
         'prefill': {'contact': '', 'email': ''},
       };

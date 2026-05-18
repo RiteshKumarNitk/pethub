@@ -82,8 +82,8 @@ export default function LoginPage() {
           <div className="w-16 h-16 bg-[hsl(var(--primary))] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-orange-500/20">
             <span className="text-white text-3xl font-bold">P</span>
           </div>
-          <h2 className="text-3xl font-bold text-[hsl(var(--secondary))] mb-2">Welcome to PetHub</h2>
-          <p className="text-gray-500">Your pet's second favorite place.</p>
+          <h2 className="text-3xl font-bold text-[hsl(var(--secondary))] mb-2">Welcome to PawStore</h2>
+          <p className="text-gray-500">Premium pet supplies delivered to your door.</p>
         </div>
 
         <AnimatePresence mode="wait">

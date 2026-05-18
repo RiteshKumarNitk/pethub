@@ -12,7 +12,7 @@ export function getUploadSignature() {
   const timestamp = Math.round(Date.now() / 1000);
   const params = {
     timestamp,
-    upload_preset: "pet_hub_uploads",
+    upload_preset: "pawstore_uploads",
   };
   
   const signature = cloudinary.utils.api_sign_request(

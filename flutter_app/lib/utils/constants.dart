@@ -19,6 +19,6 @@ class CloudinaryConstants {
   );
   static const String uploadPreset = String.fromEnvironment(
     'CLOUDINARY_UPLOAD_PRESET',
-    defaultValue: 'pet_hub_uploads',
+    defaultValue: 'pawstore_uploads',
   );
 }
