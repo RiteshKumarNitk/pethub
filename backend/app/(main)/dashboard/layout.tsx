@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { 
   LayoutDashboard, 
   Dog, 
@@ -10,13 +11,18 @@ import {
   Store, 
   Settings,
   LogOut,
-  Plus
+  Heart,
+  Package,
+  Loader2,
+  MessageCircle
 } from "lucide-react";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
+  { icon: Package, label: "My Orders", href: "/dashboard" },
+  { icon: Heart, label: "Wishlist", href: "/dashboard/wishlist" },
   { icon: Dog, label: "My Pets", href: "/dashboard/pets" },
-  { icon: ShoppingBag, label: "Marketplace", href: "/marketplace" },
+  { icon: MessageCircle, label: "Support", href: "/dashboard/tickets" },
   { icon: Store, label: "Pet Shop", href: "/shop" },
   { icon: Calendar, label: "Bookings", href: "/dashboard/bookings" },
 ];
@@ -27,6 +33,21 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
+      router.refresh();
+    } catch (err) {
+      console.error("Logout failed", err);
+    } finally {
+      setLoggingOut(false);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-gray-50 pt-20">
@@ -37,7 +58,7 @@ export default function DashboardLayout({
           <nav className="space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon;
-              const isActive = pathname === item.href;
+              const isActive = item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href);
               return (
                 <Link
                   key={item.href}
@@ -64,8 +85,12 @@ export default function DashboardLayout({
             <Settings className="w-5 h-5" />
             Settings
           </Link>
-          <button className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-red-500 hover:bg-red-50 transition-all font-medium">
-            <LogOut className="w-5 h-5" />
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-red-500 hover:bg-red-50 transition-all font-medium disabled:opacity-50"
+          >
+            {loggingOut ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogOut className="w-5 h-5" />}
             Sign Out
           </button>
         </div>

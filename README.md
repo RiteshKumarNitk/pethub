@@ -116,3 +116,14 @@ flutter run
 - go_router (navigation)
 - flutter_secure_storage (token storage)
 - Razorpay SDK (checkout)
+
+
+
+
+
+Admin credentials:
+- 
+Phone: +911234567890
+- 
+OTP: 123456 (master dev OTP)
+Login at /login, then access /admin.

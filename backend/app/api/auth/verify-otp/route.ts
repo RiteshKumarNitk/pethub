@@ -23,9 +23,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid or expired OTP" }, { status: 401 });
     }
     
+    const storedName = stored?.name;
     otpStore.delete(normalizedPhone);
     
-    const user = await findOrCreateUser(normalizedPhone);
+    const user = await findOrCreateUser(normalizedPhone, storedName);
     const token = await createToken({
       userId: user.id,
       phone: user.phone,

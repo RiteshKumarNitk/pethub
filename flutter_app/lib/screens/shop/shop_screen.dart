@@ -108,9 +108,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                 ),
-                itemCount: productList.length,
+                itemCount: productList.products.length,
                 itemBuilder: (context, index) =>
-                    _buildProductCard(context, ref, productList[index]),
+                    _buildProductCard(context, ref, productList.products[index]),
               ),
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text('Error: $e')),

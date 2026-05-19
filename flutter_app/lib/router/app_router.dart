@@ -10,6 +10,9 @@ import 'package:pawstore/screens/shop/product_detail_screen.dart';
 import 'package:pawstore/screens/shop/cart_screen.dart';
 import 'package:pawstore/screens/profile/profile_screen.dart';
 import 'package:pawstore/screens/profile/orders_screen.dart';
+import 'package:pawstore/screens/profile/addresses_screen.dart';
+import 'package:pawstore/screens/profile/pets_screen.dart';
+import 'package:pawstore/screens/profile/tickets_screen.dart';
 import 'package:pawstore/widgets/main_scaffold.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -22,16 +25,20 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) async {
       final api = ApiService();
       final token = await api.getToken();
+      final onboarded = await api.getString('has_onboarded');
+      final isOnboarded = onboarded == 'true';
 
       if (state.matchedLocation == '/splash') {
         if (token != null) {
-          return '/home';
+          if (isOnboarded) return '/home';
+          return '/onboarding';
         }
         return '/login';
       }
 
       if (state.matchedLocation == '/login' && token != null) {
-        return '/home';
+        if (isOnboarded) return '/home';
+        return '/onboarding';
       }
 
       return null;
@@ -77,6 +84,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/orders',
         builder: (context, state) => const OrdersScreen(),
+      ),
+      GoRoute(
+        path: '/pets',
+        builder: (context, state) => const PetsScreen(),
+      ),
+      GoRoute(
+        path: '/addresses',
+        builder: (context, state) => const AddressesScreen(),
+      ),
+      GoRoute(
+        path: '/tickets',
+        builder: (context, state) => const TicketsScreen(),
       ),
     ],
   );

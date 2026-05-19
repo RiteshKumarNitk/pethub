@@ -13,40 +13,34 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Profile',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFFFF6B35),
         foregroundColor: Colors.white,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: const Color(0xFFFF6B35),
-            child: Text(
-              user?.name?.substring(0, 1).toUpperCase() ??
-                  user?.phone.substring(0, 2) ??
-                  'U',
-              style: const TextStyle(
-                fontSize: 32,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
           Center(
             child: Column(
               children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundColor: const Color(0xFFFF6B35),
+                  child: Text(
+                    user?.name?.substring(0, 1).toUpperCase() ??
+                        user?.phone.substring(0, 2) ??
+                        'U',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Text(
                   user?.name ?? 'User',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   user?.phone ?? '',
@@ -56,30 +50,24 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 32),
-          _buildMenuItem(
-            context,
-            Icons.shopping_bag,
-            'My Orders',
-            () => context.push('/orders'),
-          ),
-          const Divider(height: 32),
+          _buildMenuItem(context, Icons.shopping_bag, 'My Orders', () => context.push('/orders')),
+          const Divider(height: 1),
+          _buildMenuItem(context, Icons.pets, 'My Pets', () => context.push('/pets')),
+          const Divider(height: 1),
+          _buildMenuItem(context, Icons.location_on, 'Addresses', () => context.push('/addresses')),
+          const Divider(height: 1),
+          _buildMenuItem(context, Icons.support_agent, 'Support Tickets', () => context.push('/tickets')),
+          const Divider(height: 1),
           _buildMenuItem(context, Icons.logout, 'Logout', () async {
             await ref.read(authStateProvider.notifier).logout();
-            if (context.mounted) {
-              context.go('/login');
-            }
+            if (context.mounted) context.go('/login');
           }),
         ],
       ),
     );
   }
 
-  Widget _buildMenuItem(
-    BuildContext context,
-    IconData icon,
-    String title,
-    VoidCallback onTap,
-  ) {
+  Widget _buildMenuItem(BuildContext context, IconData icon, String title, VoidCallback onTap) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFFFF6B35)),
       title: Text(title),

@@ -4,9 +4,12 @@ class Product {
   final String? description;
   final double price;
   final String category;
+  final String? petType;
   final int stock;
   final String? imageUrl;
   final bool active;
+  final double? avgRating;
+  final int? reviewCount;
 
   Product({
     required this.id,
@@ -14,9 +17,12 @@ class Product {
     this.description,
     required this.price,
     required this.category,
+    this.petType,
     required this.stock,
     this.imageUrl,
     required this.active,
+    this.avgRating,
+    this.reviewCount,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -26,9 +32,12 @@ class Product {
       description: json['description'],
       price: double.parse(json['price'].toString()),
       category: json['category'],
+      petType: json['pet_type'],
       stock: json['stock'] ?? 0,
       imageUrl: json['image_url'],
       active: json['active'] ?? true,
+      avgRating: json['avgRating'] != null ? double.parse(json['avgRating'].toString()) : null,
+      reviewCount: json['reviewCount'],
     );
   }
 }
@@ -40,6 +49,11 @@ class CartItem {
   CartItem({required this.product, this.quantity = 1});
 
   double get total => product.price * quantity;
+
+  Map<String, dynamic> toJson() => {
+    'productId': product.id,
+    'qty': quantity,
+  };
 }
 
 class OrderItem {
@@ -77,6 +91,7 @@ class Order {
   final int id;
   final int userId;
   final double total;
+  final double? discountAmount;
   final String status;
   final String? razorpayOrderId;
   final DateTime createdAt;
@@ -86,8 +101,9 @@ class Order {
     required this.id,
     required this.userId,
     required this.total,
-    required this.status,
+    this.discountAmount,
     this.razorpayOrderId,
+    required this.status,
     required this.createdAt,
     this.items,
   });
@@ -97,14 +113,42 @@ class Order {
       id: json['id'],
       userId: json['user_id'],
       total: double.parse(json['total'].toString()),
+      discountAmount: json['discount_amount'] != null ? double.parse(json['discount_amount'].toString()) : null,
       status: json['status'],
       razorpayOrderId: json['razorpay_order_id'],
-      createdAt: DateTime.parse(
-        json['created_at'] ?? DateTime.now().toIso8601String(),
-      ),
+      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
       items: json['items'] != null
           ? (json['items'] as List).map((e) => OrderItem.fromJson(e)).toList()
           : null,
+    );
+  }
+}
+
+class Review {
+  final int id;
+  final int userId;
+  final int rating;
+  final String? comment;
+  final String? userName;
+  final DateTime createdAt;
+
+  Review({
+    required this.id,
+    required this.userId,
+    required this.rating,
+    this.comment,
+    this.userName,
+    required this.createdAt,
+  });
+
+  factory Review.fromJson(Map<String, dynamic> json) {
+    return Review(
+      id: json['id'],
+      userId: json['user_id'] ?? json['userId'],
+      rating: json['rating'],
+      comment: json['comment'],
+      userName: json['user_name'] ?? json['userName'],
+      createdAt: DateTime.parse(json['created_at'] ?? json['createdAt'] ?? DateTime.now().toIso8601String()),
     );
   }
 }

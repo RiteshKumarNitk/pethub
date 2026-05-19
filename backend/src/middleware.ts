@@ -10,10 +10,25 @@ export async function middleware(request: NextRequest) {
   // Get token from cookies
   const token = request.cookies.get("auth_token")?.value;
 
+  // Allow admin login page without auth
+  if (pathname === "/admin/login") {
+    if (token) {
+      try {
+        const { payload } = await jwtVerify(token, JWT_SECRET);
+        if (payload.role === "admin") {
+          return NextResponse.redirect(new URL("/admin", request.url));
+        }
+      } catch {
+        // Invalid token, allow login
+      }
+    }
+    return NextResponse.next();
+  }
+
   // Protect Admin Routes
   if (pathname.startsWith("/admin")) {
     if (!token) {
-      return NextResponse.redirect(new URL("/login", request.url));
+      return NextResponse.redirect(new URL("/admin/login", request.url));
     }
 
     try {
@@ -22,8 +37,8 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/", request.url));
       }
       return NextResponse.next();
-    } catch (err) {
-      return NextResponse.redirect(new URL("/login", request.url));
+    } catch {
+      return NextResponse.redirect(new URL("/admin/login", request.url));
     }
   }
 
@@ -45,12 +60,33 @@ export async function middleware(request: NextRequest) {
   if (pathname === "/login") {
     if (token) {
       try {
-        await jwtVerify(token, JWT_SECRET);
+        const { payload } = await jwtVerify(token, JWT_SECRET);
+        if (payload.role === "admin") {
+          return NextResponse.redirect(new URL("/admin", request.url));
+        }
         return NextResponse.redirect(new URL("/dashboard", request.url));
-      } catch (err) {
+      } catch {
         // Invalid token, allow staying on login
         return NextResponse.next();
       }
+    }
+  }
+
+  // Protect Admin API routes - require admin role
+  if (pathname.startsWith("/api/admin/")) {
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    try {
+      const { payload } = await jwtVerify(token, JWT_SECRET);
+      if (payload.role !== "admin") {
+        return NextResponse.json({ error: "Forbidden: Admin only" }, { status: 403 });
+      }
+      const headers = new Headers(request.headers);
+      headers.set("x-user-id", (payload as any).userId.toString());
+      return NextResponse.next({ request: { headers } });
+    } catch {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
   }
 
@@ -59,7 +95,7 @@ export async function middleware(request: NextRequest) {
     const PUBLIC_API_PATHS = ["/api/auth", "/api/products", "/api/blogs", "/api/home"];
     const isPublic = PUBLIC_API_PATHS.some(path => pathname.startsWith(path));
     
-    if (isPublic && request.method === "GET") {
+    if (isPublic) {
         return NextResponse.next();
     }
 
@@ -72,7 +108,7 @@ export async function middleware(request: NextRequest) {
       const headers = new Headers(request.headers);
       headers.set("x-user-id", (payload as any).userId.toString());
       return NextResponse.next({ request: { headers } });
-    } catch (err) {
+    } catch {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
   }

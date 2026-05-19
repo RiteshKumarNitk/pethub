@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -16,7 +16,10 @@ import {
   Loader2,
   Search,
   SlidersHorizontal,
-  ArrowUpDown
+  ArrowUpDown,
+  MessageSquare,
+  User,
+  Send
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -48,6 +51,56 @@ function ShopContent() {
   // Cart
   const [cartOpen, setCartOpen] = useState(false);
   const [cart, setCart] = useState<{id: number, name: string, price: number, qty: number, imageUrl: string}[]>([]);
+
+  // Reviews State
+  const [reviewModalProduct, setReviewModalProduct] = useState<any>(null);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
+  const [productReviews, setProductReviews] = useState<Record<number, any[]>>({});
+  const [reviewStats, setReviewStats] = useState<Record<number, { averageRating: number; totalReviews: number }>>({});
+  const [submittingReview, setSubmittingReview] = useState(false);
+
+  const fetchReviewsForProduct = useCallback(async (productId: number) => {
+    try {
+      const res = await fetch(`/api/products/${productId}/reviews`);
+      const data = await res.json();
+      if (data.reviews) {
+        setProductReviews(prev => ({ ...prev, [productId]: data.reviews }));
+      }
+      if (data.averageRating !== undefined) {
+        setReviewStats(prev => ({ ...prev, [productId]: { averageRating: data.averageRating, totalReviews: data.totalReviews } }));
+      }
+    } catch (err) {
+      console.error("Failed to fetch reviews", err);
+    }
+  }, []);
+
+  const openReviewModal = (product: any) => {
+    setReviewModalProduct(product);
+    setReviewForm({ rating: 5, comment: "" });
+    fetchReviewsForProduct(product.id);
+  };
+
+  const submitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewModalProduct) return;
+    setSubmittingReview(true);
+    try {
+      const res = await fetch(`/api/products/${reviewModalProduct.id}/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reviewForm),
+      });
+      if (res.ok) {
+        fetchReviewsForProduct(reviewModalProduct.id);
+        setReviewForm({ rating: 5, comment: "" });
+        setReviewModalProduct(null);
+      }
+    } catch (err) {
+      console.error("Failed to submit review", err);
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   // Fetch Products
   useEffect(() => {
@@ -329,27 +382,62 @@ function ShopContent() {
                         <div className="space-y-2">
                            <div className="flex items-center gap-1">
                               {[...Array(5)].map((_, i) => (
-                                <Star key={i} className={`w-3 h-3 ${i < Math.round(product.rating || 4.7) ? "text-yellow-500 fill-yellow-500" : "text-gray-200"}`} />
+                                <Star key={i} className={`w-3 h-3 ${i < Math.round(reviewStats[product.id]?.averageRating || product.rating || 4.7) ? "text-yellow-500 fill-yellow-500" : "text-gray-200"}`} />
                               ))}
-                              <span className="text-[9px] font-black text-gray-300 ml-2 tracking-widest uppercase">{product.reviews || 80} Reviews</span>
+                              <span className="text-[9px] font-black text-gray-300 ml-2 tracking-widest uppercase">{reviewStats[product.id]?.totalReviews || product.reviews || 80} Reviews</span>
                            </div>
                            <h3 className="text-lg font-black text-[hsl(var(--secondary))] tracking-tight group-hover:text-orange-500 transition-colors line-clamp-2 h-12 leading-tight">{product.name}</h3>
                            <p className="text-gray-400 text-xs font-bold leading-relaxed line-clamp-2">{product.description || "Premium veterinary care product."}</p>
                         </div>
+
+                        {/* Recent Reviews */}
+                        {productReviews[product.id] && productReviews[product.id].length > 0 && (
+                          <div className="mt-4 space-y-2 pt-4 border-t border-gray-50">
+                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Recent Reviews</p>
+                            {productReviews[product.id].slice(0, 3).map((review: any) => (
+                              <div key={review.id} className="p-3 bg-gray-50 rounded-xl">
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="flex items-center gap-1">
+                                    {[...Array(5)].map((_, i) => (
+                                      <Star key={i} className={`w-2.5 h-2.5 ${i < review.rating ? "text-yellow-500 fill-yellow-500" : "text-gray-200"}`} />
+                                    ))}
+                                  </div>
+                                  <span className="text-[8px] font-bold text-gray-300">{new Date(review.createdAt).toLocaleDateString("en-IN")}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <User className="w-3 h-3 text-gray-400" />
+                                  <span className="text-[9px] font-bold text-gray-500">{review.userName || "Anonymous"}</span>
+                                </div>
+                                {review.comment && (
+                                  <p className="text-[10px] font-medium text-gray-500 line-clamp-2">{review.comment}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       
-                      {/* Price & Add to Cart */}
+                      {/* Price, Add to Cart & Write Review */}
                       <div className="flex items-center justify-between pt-6 border-t border-gray-50 mt-6">
                         <div className="flex items-center gap-0.5 text-2xl font-black text-[hsl(var(--secondary))]">
                           <IndianRupee className="w-4 h-4" />
                           {product.price}
                         </div>
-                        <button 
-                          onClick={() => addToCart(product)}
-                          className="w-12 h-12 bg-[hsl(var(--secondary))] text-white rounded-xl flex items-center justify-center hover:bg-orange-500 transition-all shadow-md active:scale-95 cursor-pointer"
-                        >
-                          <Plus className="w-5 h-5" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => openReviewModal(product)}
+                            className="w-10 h-10 bg-gray-50 text-gray-500 rounded-xl flex items-center justify-center hover:bg-orange-50 hover:text-orange-500 transition-all cursor-pointer"
+                            title="Write a Review"
+                          >
+                            <MessageSquare className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => addToCart(product)}
+                            className="w-12 h-12 bg-[hsl(var(--secondary))] text-white rounded-xl flex items-center justify-center hover:bg-orange-500 transition-all shadow-md active:scale-95 cursor-pointer"
+                          >
+                            <Plus className="w-5 h-5" />
+                          </button>
+                        </div>
                       </div>
                     </motion.div>
                   ))}
@@ -358,6 +446,113 @@ function ShopContent() {
           </div>
         </div>
       </div>
+
+      {/* Review Modal */}
+      <AnimatePresence>
+        {reviewModalProduct && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setReviewModalProduct(null)}
+              className="fixed inset-0 bg-[hsl(var(--secondary))]/20 backdrop-blur-md z-[60]"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 z-[70] flex items-center justify-center p-6"
+            >
+              <div className="bg-white rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-black text-[hsl(var(--secondary))] tracking-tight">Write a Review</h3>
+                  <button onClick={() => setReviewModalProduct(null)} className="p-2 bg-gray-50 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <p className="text-sm font-bold text-gray-500 mb-6 line-clamp-1">{reviewModalProduct.name}</p>
+
+                <form onSubmit={submitReview} className="space-y-6">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Rating</label>
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setReviewForm({ ...reviewForm, rating: star })}
+                          className="transition-all hover:scale-110"
+                        >
+                          <Star className={`w-8 h-8 ${star <= reviewForm.rating ? "text-yellow-500 fill-yellow-500" : "text-gray-200"}`} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Comment (optional)</label>
+                    <textarea
+                      rows={4}
+                      placeholder="Share your experience with this product..."
+                      className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-sm font-medium resize-none"
+                      value={reviewForm.comment}
+                      onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setReviewModalProduct(null)}
+                      className="flex-1 py-4 bg-gray-50 text-gray-500 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-100 transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      disabled={submittingReview}
+                      className="flex-1 py-4 bg-[hsl(var(--primary))] text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-orange-500/20 hover:scale-[1.02] transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+                    >
+                      {submittingReview ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-4 h-4" /> Submit Review</>}
+                    </button>
+                  </div>
+                </form>
+
+                {/* Existing Reviews in Modal */}
+                {productReviews[reviewModalProduct.id] && productReviews[reviewModalProduct.id].length > 0 && (
+                  <div className="mt-8 pt-6 border-t border-gray-100">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
+                      All Reviews ({productReviews[reviewModalProduct.id].length})
+                    </p>
+                    <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                      {productReviews[reviewModalProduct.id].map((review: any) => (
+                        <div key={review.id} className="p-4 bg-gray-50 rounded-2xl">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-1.5">
+                              <User className="w-3.5 h-3.5 text-gray-400" />
+                              <span className="text-xs font-bold text-gray-500">{review.userName || "Anonymous"}</span>
+                            </div>
+                            <span className="text-[9px] font-bold text-gray-300">{new Date(review.createdAt).toLocaleDateString("en-IN")}</span>
+                          </div>
+                          <div className="flex items-center gap-1 mb-2">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} className={`w-3 h-3 ${i < review.rating ? "text-yellow-500 fill-yellow-500" : "text-gray-200"}`} />
+                            ))}
+                          </div>
+                          {review.comment && (
+                            <p className="text-xs font-medium text-gray-500">{review.comment}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Cart Sidebar Panel */}
       <AnimatePresence>

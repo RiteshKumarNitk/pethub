@@ -2,32 +2,34 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { 
   ShoppingBag, 
   Users, 
-  Calendar, 
+  IndianRupee, 
   CheckCircle2, 
   Clock, 
-  AlertCircle,
   TrendingUp,
-  ArrowUpRight,
-  Loader2,
-  ShieldCheck
+  ShieldCheck,
+  Package,
+  Truck,
+  AlertTriangle,
+  ArrowRight
 } from "lucide-react";
-import Link from "next/link";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [lowStockProducts, setLowStockProducts] = useState<any[]>([]);
 
   useEffect(() => {
     fetchStats();
+    fetchLowStock();
   }, []);
 
   const fetchStats = async () => {
     setLoading(true);
     try {
-      // We'll create a single stats API for efficiency
       const res = await fetch("/api/admin/stats");
       const data = await res.json();
       setStats(data);
@@ -38,19 +40,27 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchLowStock = async () => {
+    try {
+      const res = await fetch("/api/admin/products");
+      const data = await res.json();
+      if (data.products) {
+        setLowStockProducts(data.products.filter((p: any) => p.stock < 5));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const statCards = [
     { label: "Products", value: stats?.totalProducts || "0", icon: ShoppingBag, color: "text-blue-600", bg: "bg-blue-50" },
-    { label: "Total Orders", value: stats?.totalOrders || "0", icon: Calendar, color: "text-orange-600", bg: "bg-orange-50" },
-    { label: "Registered Users", value: stats?.totalUsers || "0", icon: Users, color: "text-green-600", bg: "bg-green-50" },
+    { label: "Total Orders", value: stats?.totalOrders || "0", icon: Package, color: "text-orange-600", bg: "bg-orange-50" },
+    { label: "Total Revenue", value: `₹${(stats?.totalRevenue || 0).toLocaleString('en-IN')}`, icon: IndianRupee, color: "text-green-600", bg: "bg-green-50" },
+    { label: "Registered Users", value: stats?.totalUsers || "0", icon: Users, color: "text-purple-600", bg: "bg-purple-50" },
   ];
 
   return (
     <div className="space-y-12 relative">
-      {loading && (
-        <div className="fixed inset-0 bg-white/30 backdrop-blur-sm z-50 flex items-center justify-center">
-          <Loader2 className="w-12 h-12 animate-spin text-[hsl(var(--primary))]" />
-        </div>
-      )}
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -68,28 +78,42 @@ export default function AdminDashboard() {
       </div>
 
       {/* Grid Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {statCards.map((stat, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="p-10 bg-white rounded-[3rem] border border-gray-50 shadow-sm hover:shadow-2xl hover:shadow-orange-500/5 transition-all group"
-          >
-            <div className={`w-14 h-14 ${stat.bg} ${stat.color} rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform`}>
-              <stat.icon className="w-7 h-7" />
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="p-8 bg-white rounded-[3rem] border border-gray-50 shadow-sm animate-pulse">
+              <div className="w-12 h-12 bg-gray-100 rounded-2xl mb-6" />
+              <div className="space-y-3">
+                <div className="h-3 bg-gray-100 rounded-full w-20" />
+                <div className="h-8 bg-gray-100 rounded-full w-24" />
+              </div>
             </div>
-            <div className="space-y-1">
-               <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{stat.label}</p>
-               <div className="flex items-center justify-between">
-                  <p className="text-4xl font-black text-[hsl(var(--secondary))]">{stat.value}</p>
-                  <TrendingUp className="w-5 h-5 text-green-500" />
-               </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {statCards.map((stat, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="p-8 bg-white rounded-[3rem] border border-gray-50 shadow-sm hover:shadow-2xl hover:shadow-orange-500/5 transition-all group"
+            >
+              <div className={`w-12 h-12 ${stat.bg} ${stat.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                <stat.icon className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{stat.label}</p>
+                 <div className="flex items-center justify-between">
+                    <p className="text-3xl font-black text-[hsl(var(--secondary))]">{stat.value}</p>
+                    <TrendingUp className="w-4 h-4 text-green-500" />
+                 </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         {/* Recent Performance "Chart" Simulation */}
@@ -118,8 +142,88 @@ export default function AdminDashboard() {
            </div>
         </div>
 
-        {/* Integration Status & System Heartbeat */}
-        <div className="bg-[hsl(var(--secondary))] rounded-[3.5rem] p-10 text-white relative overflow-hidden shadow-2xl">
+        {/* Order Status Breakdown */}
+        <div className="bg-white rounded-[3.5rem] p-10 border border-gray-50 shadow-sm">
+           <div className="flex items-center justify-between mb-8">
+              <div>
+                 <h3 className="text-2xl font-black text-[hsl(var(--secondary))] tracking-tight">Order Status</h3>
+                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Real-time breakdown</p>
+              </div>
+           </div>
+           <div className="space-y-5">
+              {[
+                { label: "Pending", count: stats?.pendingOrders || 0, color: "bg-yellow-400", bg: "bg-yellow-50", icon: Clock },
+                { label: "Shipped", count: stats?.shippedOrders || 0, color: "bg-purple-400", bg: "bg-purple-50", icon: Truck },
+                { label: "Delivered", count: stats?.deliveredOrders || 0, color: "bg-green-400", bg: "bg-green-50", icon: CheckCircle2 },
+              ].map((item, i) => {
+                const maxCount = Math.max(stats?.pendingOrders || 0, stats?.shippedOrders || 0, stats?.deliveredOrders || 0, 1);
+                const percentage = (item.count / maxCount) * 100;
+                return (
+                  <div key={i} className="space-y-2">
+                     <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                           <div className={`w-8 h-8 ${item.bg} rounded-lg flex items-center justify-center`}>
+                              <item.icon className={`w-4 h-4 ${item.color.replace('bg-', 'text-')}`} />
+                           </div>
+                           <span className="font-bold text-sm text-[hsl(var(--secondary))]">{item.label}</span>
+                        </div>
+                        <span className="font-black text-lg text-[hsl(var(--secondary))]">{item.count}</span>
+                     </div>
+                     <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percentage}%` }}
+                          transition={{ delay: i * 0.1, duration: 0.8 }}
+                          className={`h-full ${item.color} rounded-full`}
+                        />
+                     </div>
+                  </div>
+                );
+              })}
+           </div>
+        </div>
+
+         {/* Low Stock Alerts */}
+         {lowStockProducts.length > 0 && (
+           <div className="bg-white rounded-[3.5rem] p-10 border border-gray-50 shadow-sm">
+             <div className="flex items-center gap-3 mb-8">
+               <div className="w-10 h-10 bg-orange-50 rounded-2xl flex items-center justify-center">
+                 <AlertTriangle className="w-5 h-5 text-orange-500" />
+               </div>
+               <div>
+                 <h3 className="text-2xl font-black text-[hsl(var(--secondary))] tracking-tight">Low Stock Alerts</h3>
+                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">{lowStockProducts.length} products need restocking</p>
+               </div>
+             </div>
+             <div className="space-y-3">
+               {lowStockProducts.slice(0, 5).map((product: any) => (
+                 <div key={product.id} className="flex items-center justify-between p-4 bg-orange-50 rounded-2xl border border-orange-100 hover:bg-orange-100/50 transition-all">
+                   <div>
+                     <p className="font-black text-sm text-[hsl(var(--secondary))]">{product.name}</p>
+                     <p className="text-xs font-bold text-orange-600">Stock: {product.stock} units</p>
+                   </div>
+                   <Link
+                     href="/admin/products"
+                     className="flex items-center gap-1 px-4 py-2 bg-white rounded-xl text-xs font-black text-orange-500 uppercase tracking-widest shadow-sm hover:shadow-md transition-all"
+                   >
+                     Restock <ArrowRight className="w-3 h-3" />
+                   </Link>
+                 </div>
+               ))}
+               {lowStockProducts.length > 5 && (
+                 <Link
+                   href="/admin/products"
+                   className="block text-center py-3 text-xs font-black text-[hsl(var(--primary))] uppercase tracking-widest hover:underline"
+                 >
+                   View all {lowStockProducts.length} low stock products
+                 </Link>
+               )}
+             </div>
+           </div>
+         )}
+
+         {/* Integration Status & System Heartbeat */}
+         <div className="bg-[hsl(var(--secondary))] rounded-[3.5rem] p-10 text-white relative overflow-hidden shadow-2xl">
            <h3 className="text-xl font-bold mb-8 italic flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-orange-500" />
               System Health

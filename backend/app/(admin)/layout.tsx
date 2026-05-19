@@ -3,13 +3,14 @@
 import { 
   LayoutDashboard, 
   ShoppingBag, 
-  Calendar, 
+  Package, 
   Users, 
   Settings, 
   LogOut,
   Bell,
   Loader2,
-  FileText
+  FileText,
+  MessageCircle
 } from "lucide-react";
 import Link from "next/link";
 import { Outfit } from "next/font/google";
@@ -31,7 +32,7 @@ export default function AdminLayout({
     setLoggingOut(true);
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-      router.push("/login");
+      router.push("/admin/login");
       router.refresh();
     } catch (err) {
       console.error("Logout failed", err);
@@ -58,9 +59,10 @@ export default function AdminLayout({
                   {[
                     { icon: LayoutDashboard, label: "Overview", href: "/admin" },
                     { icon: ShoppingBag, label: "Products", href: "/admin/products" },
-                    { icon: ShoppingBag, label: "Orders", href: "/admin/orders" },
+                    { icon: Package, label: "Orders", href: "/admin/orders" },
                     { icon: FileText, label: "Pet Guides (Blog)", href: "/admin/blogs" },
                     { icon: Users, label: "Users", href: "/admin/users" },
+                    { icon: MessageCircle, label: "Support Tickets", href: "/admin/tickets" },
                   ].map((item) => (
                   <Link
                     key={item.href}
