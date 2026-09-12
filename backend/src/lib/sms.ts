@@ -52,9 +52,9 @@ export async function sendOTP(phone: string, otp: string) {
     console.error(`[SMS Error] MSG91 failed: ${err.message}`);
   }
   
-  console.log(`\n------------------------------`);
-  console.log(`[DEBUG] OTP for ${phone}: ${otp} (Use 123456 as Master OTP)`);
-  console.log(`------------------------------\n`);
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[DEV] OTP for ${phone}: ${otp}`);
+  }
   
   return { sid: `dev_${Date.now()}` };
 }

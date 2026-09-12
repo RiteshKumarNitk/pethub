@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
         id: users.id,
         name: users.name,
         phone: users.phone,
+        email: users.email,
         role: users.role,
       })
       .from(users)
@@ -34,5 +35,27 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Mobile Me GET error:", error);
     return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
+  }
+}
+
+/** PUT — update profile (name, email) */
+export async function PUT(request: NextRequest) {
+  try {
+    const userId = parseInt(request.headers.get("x-user-id") || "0");
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const body = await request.json();
+    const patch: Record<string, string | null> = {};
+    if (body.name !== undefined) patch.name = body.name?.trim() || null;
+    if (body.email !== undefined) patch.email = body.email?.trim() || null;
+
+    const [updated] = await db.update(users).set(patch).where(eq(users.id, userId)).returning({
+      id: users.id, name: users.name, phone: users.phone, email: users.email, role: users.role,
+    });
+
+    return NextResponse.json({ user: updated });
+  } catch (error) {
+    console.error("Mobile Me PUT error:", error);
+    return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
   }
 }

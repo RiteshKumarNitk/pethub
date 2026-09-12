@@ -3,679 +3,355 @@
 import { useEffect, useState, Suspense, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { 
-  ShoppingBag, 
-  Star, 
-  Plus, 
-  Minus, 
-  X, 
-  ChevronRight, 
-  ShoppingCart, 
-  IndianRupee, 
-  Loader2,
-  Search,
-  SlidersHorizontal,
-  ArrowUpDown,
-  MessageSquare,
-  User,
-  Send
+import { useSearchParams, useRouter } from "next/navigation";
+import {
+  ShoppingBag, Star, SlidersHorizontal, X, ChevronLeft, ChevronRight,
+  Search, Package, Loader2, Check, Heart,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useCart } from "@/components/Navbar";
 
-const categories = ["All", "Food", "Accessories", "Care & Hygiene", "Toys", "Health"];
+interface Product {
+  id: number; slug: string; name: string; shortDescription: string | null;
+  price: string; mrp: string | null; stock: number; imageUrl: string | null;
+  categoryName: string | null; brandName: string | null; rating: number; reviewCount: number;
+}
+interface Category { id: number; name: string; slug: string }
+interface Brand { id: number; name: string; slug: string }
 
-const fallbackProducts = [
-  { id: 1, name: "Royal Canin Maxi Puppy Kibble", price: 1599, rating: 4.8, reviews: 120, imageUrl: "/images/food.png", category: "Food", description: "Premium dry puppy food.", active: true },
-  { id: 2, name: "Premium Retractable Dog Leash (5m)", price: 899, rating: 4.9, reviews: 85, imageUrl: "/images/hero.png", category: "Accessories", description: "Heavy duty retractable leash.", active: true },
-  { id: 3, name: "Orthopedic Memory Foam Pet Bed (Large)", price: 3499, rating: 4.7, reviews: 210, imageUrl: "/images/hero.png", category: "Accessories", description: "Joint relief bed for pets.", active: true },
-  { id: 4, name: "Organic Aloe Vera Dog Shampoo (500ml)", price: 450, rating: 4.8, reviews: 110, imageUrl: "/images/grooming.png", category: "Care & Hygiene", description: "Hypoallergenic shampoo.", active: true },
-  { id: 5, name: "Self-Cleaning Deshedding Grooming Brush", price: 599, rating: 4.6, reviews: 60, imageUrl: "/images/grooming.png", category: "Care & Hygiene", description: "Easy deshedding brush.", active: true },
-  { id: 6, name: "Interactive Wobble Treat Dispensing Dog Toy", price: 699, rating: 4.6, reviews: 56, imageUrl: "/images/adoption.png", category: "Toys", description: "Stimulating rubber toy.", active: true }
+const petTypes = [
+  { value: "all", label: "All Pets" },
+  { value: "dog", label: "Dog" },
+  { value: "cat", label: "Cat" },
+  { value: "small_pet", label: "Small Pets" },
+];
+const sorts = [
+  { value: "new", label: "Newest" },
+  { value: "popular", label: "Popular" },
+  { value: "price_asc", label: "Price: Low → High" },
+  { value: "price_desc", label: "Price: High → Low" },
 ];
 
 function ShopContent() {
   const searchParams = useSearchParams();
-  const initialCategory = searchParams.get("category") || "All";
-  const initialSearch = searchParams.get("search") || "";
+  const router = useRouter();
+  const { refresh } = useCart();
 
-  const [productsList, setProductsList] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  
-  // Filters & State
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-  const [searchQuery, setSearchQuery] = useState(initialSearch);
-  const [priceRange, setPriceRange] = useState(5000);
-  const [sortBy, setSortBy] = useState("rating"); // rating, price-low, price-high
+  const [showFilters, setShowFilters] = useState(false);
+  const [addedId, setAddedId] = useState<number | null>(null);
+  const [wishlist, setWishlist] = useState<number[]>([]);
+  const [wishMsg, setWishMsg] = useState("");
 
-  // Cart
-  const [cartOpen, setCartOpen] = useState(false);
-  const [cart, setCart] = useState<{id: number, name: string, price: number, qty: number, imageUrl: string}[]>([]);
+  const category = searchParams.get("category") || "all";
+  const petType = searchParams.get("petType") || "all";
+  const brand = searchParams.get("brand") || "all";
+  const search = searchParams.get("search") || "";
+  const sort = searchParams.get("sort") || "new";
+  const inStock = searchParams.get("inStock") === "true";
+  const page = parseInt(searchParams.get("page") || "1");
 
-  // Reviews State
-  const [reviewModalProduct, setReviewModalProduct] = useState<any>(null);
-  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
-  const [productReviews, setProductReviews] = useState<Record<number, any[]>>({});
-  const [reviewStats, setReviewStats] = useState<Record<number, { averageRating: number; totalReviews: number }>>({});
-  const [submittingReview, setSubmittingReview] = useState(false);
+  const setParam = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value && value !== "all") params.set(key, value);
+    else params.delete(key);
+    if (key !== "page") params.delete("page");
+    router.push(`/shop?${params.toString()}`);
+  };
 
-  const fetchReviewsForProduct = useCallback(async (productId: number) => {
-    try {
-      const res = await fetch(`/api/products/${productId}/reviews`);
-      const data = await res.json();
-      if (data.reviews) {
-        setProductReviews(prev => ({ ...prev, [productId]: data.reviews }));
-      }
-      if (data.averageRating !== undefined) {
-        setReviewStats(prev => ({ ...prev, [productId]: { averageRating: data.averageRating, totalReviews: data.totalReviews } }));
-      }
-    } catch (err) {
-      console.error("Failed to fetch reviews", err);
-    }
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((d) => {
+        setCategories(d.categories || []);
+        setBrands(d.brands || []);
+      })
+      .catch(() => {});
   }, []);
 
-  const openReviewModal = (product: any) => {
-    setReviewModalProduct(product);
-    setReviewForm({ rating: 5, comment: "" });
-    fetchReviewsForProduct(product.id);
-  };
+  const loadProducts = useCallback(() => {
+    setLoading(true);
+    const params = new URLSearchParams();
+    if (category !== "all") params.set("category", category);
+    if (petType !== "all") params.set("petType", petType);
+    if (brand !== "all") params.set("brand", brand);
+    if (search) params.set("search", search);
+    if (inStock) params.set("inStock", "true");
+    params.set("sort", sort);
+    params.set("page", String(page));
+    params.set("limit", "12");
+    fetch(`/api/products?${params}`)
+      .then((r) => r.json())
+      .then((d) => {
+        setProducts(d.products || []);
+        setTotal(d.total || 0);
+        setTotalPages(d.totalPages || 1);
+      })
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false));
+  }, [category, petType, brand, search, sort, inStock, page]);
 
-  const submitReview = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!reviewModalProduct) return;
-    setSubmittingReview(true);
-    try {
-      const res = await fetch(`/api/products/${reviewModalProduct.id}/reviews`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(reviewForm),
-      });
-      if (res.ok) {
-        fetchReviewsForProduct(reviewModalProduct.id);
-        setReviewForm({ rating: 5, comment: "" });
-        setReviewModalProduct(null);
-      }
-    } catch (err) {
-      console.error("Failed to submit review", err);
-    } finally {
-      setSubmittingReview(false);
-    }
-  };
+  useEffect(() => { loadProducts(); }, [loadProducts]);
 
-  // Fetch Products
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch("/api/products");
-        const data = await res.json();
-        if (data.products && data.products.length > 0) {
-          // Parse decimal prices to float
-          const parsed = data.products.map((p: any) => ({
-            ...p,
-            price: parseFloat(p.price) || 0
-          }));
-          setProductsList(parsed);
-        } else {
-          setProductsList(fallbackProducts);
-        }
-      } catch (err) {
-        console.error("Failed to load products, using fallback", err);
-        setProductsList(fallbackProducts);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-
-    // Load Cart from LocalStorage
-    const savedCart = localStorage.getItem("pawstore_cart");
-    if (savedCart) {
-      try {
-        setCart(JSON.parse(savedCart));
-      } catch (e) {
-        console.error("Failed to parse saved cart", e);
-      }
-    }
+    fetch("/api/wishlist")
+      .then((r) => (r.ok ? r.json() : { productIds: [] }))
+      .then((d) => setWishlist(d.productIds || []))
+      .catch(() => {});
   }, []);
 
-    // Save Cart to LocalStorage
-  useEffect(() => {
-    localStorage.setItem("pawstore_cart", JSON.stringify(cart));
-  }, [cart]);
-
-  // Sync Category from URL params if changed
-  useEffect(() => {
-    const cat = searchParams.get("category");
-    if (cat) setSelectedCategory(cat);
-    
-    const search = searchParams.get("search");
-    if (search) setSearchQuery(search);
-  }, [searchParams]);
-
-  const addToCart = (product: any) => {
-    setCart(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
-      }
-      return [...prev, { 
-        id: product.id, 
-        name: product.name, 
-        price: product.price, 
-        qty: 1, 
-        imageUrl: product.imageUrl || "/images/food.png"
-      }];
+  const toggleWishlist = async (productId: number) => {
+    const res = await fetch("/api/wishlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId }),
     });
-    setCartOpen(true);
+    if (res.status === 401) {
+      setWishMsg("Sign in to save favourites");
+      setTimeout(() => setWishMsg(""), 2000);
+      return;
+    }
+    const data = await res.json();
+    setWishlist((prev) => data.inWishlist ? [...prev, productId] : prev.filter((id) => id !== productId));
   };
 
-  const removeFromCart = (id: number) => {
-    setCart(prev => prev.filter(item => item.id !== id));
-  };
-
-  const updateQty = (id: number, delta: number) => {
-    setCart(prev => prev.map(item => {
-      if (item.id === id) {
-        const newQty = Math.max(1, item.qty + delta);
-        return { ...item, qty: newQty };
-      }
-      return item;
-    }));
-  };
-
-  const total = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
-
-  // Filter & Sort Products
-  const filteredProducts = productsList.filter(prod => {
-    const matchesCategory = selectedCategory === "All" || prod.category === selectedCategory;
-    const matchesSearch = prod.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          (prod.description && prod.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesPrice = prod.price <= priceRange;
-    return matchesCategory && matchesSearch && matchesPrice;
-  }).sort((a, b) => {
-    if (sortBy === "rating") return (b.rating || 4.7) - (a.rating || 4.7);
-    if (sortBy === "price-low") return a.price - b.price;
-    if (sortBy === "price-high") return b.price - a.price;
-    return 0;
-  });
-
-  const getWhatsAppCheckoutUrl = () => {
-    const phoneNumber = "919876543210"; // standard Indian support number
-    let message = `*PawStore Order Details* 🐾\n\n`;
-    cart.forEach((item, index) => {
-      message += `${index + 1}. *${item.name}* (Qty: ${item.qty}) - ₹${item.price * item.qty}\n`;
+  const addToCart = async (productId: number) => {
+    const res = await fetch("/api/cart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId, qty: 1 }),
     });
-    message += `\n*Total Amount:* ₹${total}\n\nPlease confirm my order!`;
-    return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    if (res.ok) {
+      setAddedId(productId);
+      refresh();
+      setTimeout(() => setAddedId(null), 1500);
+    }
   };
+
+  const hasActiveFilters = category !== "all" || petType !== "all" || brand !== "all" || search || inStock;
 
   return (
-    <div className="pt-28 pb-24 bg-[#FDFBF7] min-h-screen">
-      <div className="container mx-auto px-6 max-w-7xl">
-        {/* Shop Header Banner */}
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 mb-16 px-8 md:px-16 py-16 bg-[hsl(var(--secondary))] rounded-[3.5rem] text-white relative overflow-hidden shadow-2xl">
-          <div className="relative z-10 max-w-xl space-y-6">
-            <span className="inline-block px-4 py-1.5 bg-orange-500/20 text-orange-400 rounded-full text-[9px] font-black uppercase tracking-[0.3em] border border-orange-500/20">
-              PawStore Premium Shop
-            </span>
-            <h1 className="text-4xl md:text-6xl font-black leading-none tracking-tighter">
-              Boutique Food & <br /> Care Essentials
-            </h1>
-            <p className="text-white/60 font-bold uppercase tracking-widest text-[10px] leading-relaxed max-w-md">
-              Top veterinary-recommended kibbles, organic grooming shampoos, joint-relief beds, and durable toys delivered straight to your door.
-            </p>
-            <div className="flex items-center gap-6 pt-2">
-               <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2">
-                     {[1,2,3].map(i => <div key={i} className="w-8 h-8 rounded-full border-2 border-[hsl(var(--secondary))] bg-gray-200 flex items-center justify-center text-[10px] text-gray-700 font-bold">🐶</div>)}
-                  </div>
-                  <span className="font-black text-[9px] uppercase tracking-widest text-white/80">Trusted by 50k+ Pet Parents</span>
-               </div>
-            </div>
-          </div>
-          
-          <div className="relative z-10 w-full lg:w-[320px] aspect-square rounded-[2.5rem] overflow-hidden border-8 border-white/5 shadow-2xl rotate-2 hover:rotate-0 transition-all duration-700 shrink-0 bg-[#FBF9F5] flex items-center justify-center">
-             <Image src="/images/food.png" alt="Pet Supplies" fill className="object-contain p-6" />
-          </div>
-
-          <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-orange-500/10 rounded-full blur-[100px] -mr-48 -mt-48"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -ml-32 -mb-32"></div>
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-gray-900">
+            {search ? `Results for "${search}"` : category !== "all" ? (categories.find((c) => c.slug === category)?.name || "Shop") : "All Products"}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">{total} product{total !== 1 ? "s" : ""}</p>
         </div>
-
-        {/* Core Layout: Sidebar Filters + Products Grid */}
-        <div className="flex flex-col lg:flex-row gap-10">
-          
-          {/* Left Sidebar Filter Section */}
-          <aside className="w-full lg:w-72 shrink-0 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-8 h-fit lg:sticky lg:top-28">
-             
-             {/* Search Bar Widget */}
-             <div className="space-y-3">
-                <h4 className="text-xs font-black uppercase tracking-widest text-[hsl(var(--secondary))]">Search Item</h4>
-                <div className="relative">
-                   <input 
-                     type="text" 
-                     placeholder="Search..." 
-                     value={searchQuery}
-                     onChange={(e) => setSearchQuery(e.target.value)}
-                     className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 pl-10 pr-4 text-xs font-bold text-[hsl(var(--secondary))] focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                   />
-                   <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                </div>
-             </div>
-
-             {/* Categories Section */}
-             <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-[hsl(var(--secondary))]">
-                   <SlidersHorizontal className="w-4 h-4 text-orange-500" /> Categories
-                </div>
-                <div className="flex flex-wrap lg:flex-col gap-2">
-                   {categories.map(cat => (
-                     <button
-                       key={cat}
-                       onClick={() => setSelectedCategory(cat)}
-                       className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider text-left transition-all ${
-                         selectedCategory === cat 
-                           ? "bg-orange-500 text-white shadow-md shadow-orange-500/10" 
-                           : "bg-gray-50 text-gray-400 hover:bg-gray-100"
-                       }`}
-                     >
-                       {cat}
-                     </button>
-                   ))}
-                </div>
-             </div>
-
-             {/* Price Filter Widget */}
-             <div className="space-y-4 pt-4 border-t border-gray-100">
-                <div className="flex justify-between text-xs font-black uppercase tracking-widest text-[hsl(var(--secondary))]">
-                   <span>Max Price</span>
-                   <span className="text-orange-500 font-bold">₹{priceRange}</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="100" 
-                  max="5000" 
-                  step="50"
-                  value={priceRange} 
-                  onChange={(e) => setPriceRange(Number(e.target.value))}
-                  className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-orange-500"
-                />
-             </div>
-
-             {/* Sorting Widget */}
-             <div className="space-y-4 pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-[hsl(var(--secondary))]">
-                   <ArrowUpDown className="w-4 h-4 text-orange-500" /> Sort By
-                </div>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-4 text-xs font-bold text-[hsl(var(--secondary))] focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-                >
-                   <option value="rating">Top Customer Rated</option>
-                   <option value="price-low">Price: Low to High</option>
-                   <option value="price-high">Price: High to Low</option>
-                </select>
-             </div>
-          </aside>
-
-          {/* Right Product Grid Section */}
-          <div className="flex-1 space-y-8">
-             
-             {/* Shop Filter Status & Cart Trigger */}
-             <div className="flex items-center justify-between gap-4 bg-white px-6 py-4 rounded-[2rem] border border-gray-100 shadow-sm flex-wrap sm:flex-nowrap">
-                <div className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                   Showing <span className="text-[hsl(var(--secondary))]">{filteredProducts.length}</span> Premium Items
-                </div>
-
-                <button 
-                  onClick={() => setCartOpen(true)}
-                  className="group relative flex items-center gap-4 pl-6 pr-4 py-2.5 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all shrink-0"
-                >
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[hsl(var(--secondary))]">My Bag</span>
-                  <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-all text-gray-600">
-                    <ShoppingCart className="w-4.5 h-4.5" />
-                  </div>
-                  {cart.length > 0 && (
-                    <div className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-orange-500 text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-lg animate-bounce">
-                      {cart.reduce((s, i) => s + i.qty, 0)}
-                    </div>
-                  )}
-                </button>
-             </div>
-
-             {/* Products Grid */}
-             {loading ? (
-                <div className="flex items-center justify-center py-40">
-                   <Loader2 className="w-10 h-10 animate-spin text-orange-500" />
-                </div>
-             ) : filteredProducts.length === 0 ? (
-                <div className="bg-white rounded-[3rem] border border-gray-100 py-32 text-center shadow-sm space-y-4">
-                   <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-3xl">📦</div>
-                   <h3 className="text-lg font-black text-[hsl(var(--secondary))] tracking-tight">No Products Match Filters</h3>
-                   <p className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Try adjusting search filters or categories.</p>
-                </div>
-             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredProducts.map((product, idx) => (
-                    <motion.div
-                      key={product.id}
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: Math.min(idx * 0.05, 0.3) }}
-                      className="group bg-white rounded-[2.5rem] p-6 border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-orange-500/5 transition-all flex flex-col justify-between"
-                    >
-                      <div>
-                        {/* Image aspect-ratio box */}
-                        <div className="relative aspect-square bg-[#FBF9F5] rounded-[2rem] overflow-hidden mb-6 flex items-center justify-center">
-                           {product.imageUrl ? (
-                             <Image src={product.imageUrl} alt={product.name} fill className="object-contain p-4 transition-transform duration-700 group-hover:scale-108" />
-                           ) : (
-                             <div className="text-4xl">📦</div>
-                           )}
-                           <div className="absolute top-4 left-4">
-                             <span className="px-3.5 py-1.5 bg-white/80 backdrop-blur-md rounded-xl text-[9px] font-black text-gray-500 uppercase tracking-widest shadow-sm border border-white/50">{product.category}</span>
-                           </div>
-                        </div>
-
-                        {/* Ratings & Title */}
-                        <div className="space-y-2">
-                           <div className="flex items-center gap-1">
-                              {[...Array(5)].map((_, i) => (
-                                <Star key={i} className={`w-3 h-3 ${i < Math.round(reviewStats[product.id]?.averageRating || product.rating || 4.7) ? "text-yellow-500 fill-yellow-500" : "text-gray-200"}`} />
-                              ))}
-                              <span className="text-[9px] font-black text-gray-300 ml-2 tracking-widest uppercase">{reviewStats[product.id]?.totalReviews || product.reviews || 80} Reviews</span>
-                           </div>
-                           <h3 className="text-lg font-black text-[hsl(var(--secondary))] tracking-tight group-hover:text-orange-500 transition-colors line-clamp-2 h-12 leading-tight">{product.name}</h3>
-                           <p className="text-gray-400 text-xs font-bold leading-relaxed line-clamp-2">{product.description || "Premium veterinary care product."}</p>
-                        </div>
-
-                        {/* Recent Reviews */}
-                        {productReviews[product.id] && productReviews[product.id].length > 0 && (
-                          <div className="mt-4 space-y-2 pt-4 border-t border-gray-50">
-                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Recent Reviews</p>
-                            {productReviews[product.id].slice(0, 3).map((review: any) => (
-                              <div key={review.id} className="p-3 bg-gray-50 rounded-xl">
-                                <div className="flex items-center justify-between mb-1">
-                                  <div className="flex items-center gap-1">
-                                    {[...Array(5)].map((_, i) => (
-                                      <Star key={i} className={`w-2.5 h-2.5 ${i < review.rating ? "text-yellow-500 fill-yellow-500" : "text-gray-200"}`} />
-                                    ))}
-                                  </div>
-                                  <span className="text-[8px] font-bold text-gray-300">{new Date(review.createdAt).toLocaleDateString("en-IN")}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 mb-1">
-                                  <User className="w-3 h-3 text-gray-400" />
-                                  <span className="text-[9px] font-bold text-gray-500">{review.userName || "Anonymous"}</span>
-                                </div>
-                                {review.comment && (
-                                  <p className="text-[10px] font-medium text-gray-500 line-clamp-2">{review.comment}</p>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Price, Add to Cart & Write Review */}
-                      <div className="flex items-center justify-between pt-6 border-t border-gray-50 mt-6">
-                        <div className="flex items-center gap-0.5 text-2xl font-black text-[hsl(var(--secondary))]">
-                          <IndianRupee className="w-4 h-4" />
-                          {product.price}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => openReviewModal(product)}
-                            className="w-10 h-10 bg-gray-50 text-gray-500 rounded-xl flex items-center justify-center hover:bg-orange-50 hover:text-orange-500 transition-all cursor-pointer"
-                            title="Write a Review"
-                          >
-                            <MessageSquare className="w-4 h-4" />
-                          </button>
-                          <button 
-                            onClick={() => addToCart(product)}
-                            className="w-12 h-12 bg-[hsl(var(--secondary))] text-white rounded-xl flex items-center justify-center hover:bg-orange-500 transition-all shadow-md active:scale-95 cursor-pointer"
-                          >
-                            <Plus className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-             )}
-          </div>
+        <div className="flex items-center gap-2">
+          <select
+            value={sort}
+            onChange={(e) => setParam("sort", e.target.value)}
+            className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:border-orange-300"
+          >
+            {sorts.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+          </select>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="lg:hidden flex items-center gap-2 text-sm font-semibold border border-gray-200 rounded-lg px-4 py-2"
+          >
+            <SlidersHorizontal className="w-4 h-4" /> Filters
+          </button>
         </div>
       </div>
 
-      {/* Review Modal */}
-      <AnimatePresence>
-        {reviewModalProduct && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setReviewModalProduct(null)}
-              className="fixed inset-0 bg-[hsl(var(--secondary))]/20 backdrop-blur-md z-[60]"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 z-[70] flex items-center justify-center p-6"
+      <div className="flex gap-8">
+        {/* Sidebar filters */}
+        <aside className={`w-64 flex-shrink-0 space-y-6 ${showFilters ? "fixed inset-y-0 left-0 z-50 bg-white p-5 overflow-y-auto shadow-xl" : "hidden"} lg:block lg:static lg:bg-transparent lg:p-0 lg:shadow-none`}>
+          {showFilters && (
+            <div className="flex items-center justify-between lg:hidden">
+              <h3 className="font-bold">Filters</h3>
+              <button onClick={() => setShowFilters(false)}><X className="w-5 h-5" /></button>
+            </div>
+          )}
+
+          <FilterGroup title="Pet Type">
+            {petTypes.map((pt) => (
+              <button
+                key={pt.value}
+                onClick={() => setParam("petType", pt.value)}
+                className={`block w-full text-left px-3 py-1.5 rounded-lg text-sm ${petType === pt.value ? "bg-orange-50 text-orange-600 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}
+              >
+                {pt.label}
+              </button>
+            ))}
+          </FilterGroup>
+
+          <FilterGroup title="Category">
+            <button
+              onClick={() => setParam("category", "all")}
+              className={`block w-full text-left px-3 py-1.5 rounded-lg text-sm ${category === "all" ? "bg-orange-50 text-orange-600 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}
             >
-              <div className="bg-white rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-black text-[hsl(var(--secondary))] tracking-tight">Write a Review</h3>
-                  <button onClick={() => setReviewModalProduct(null)} className="p-2 bg-gray-50 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all">
-                    <X className="w-5 h-5" />
+              All Categories
+            </button>
+            {categories.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setParam("category", c.slug)}
+                className={`block w-full text-left px-3 py-1.5 rounded-lg text-sm ${category === c.slug ? "bg-orange-50 text-orange-600 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}
+              >
+                {c.name}
+              </button>
+            ))}
+          </FilterGroup>
+
+          <FilterGroup title="Brand">
+            <button
+              onClick={() => setParam("brand", "all")}
+              className={`block w-full text-left px-3 py-1.5 rounded-lg text-sm ${brand === "all" ? "bg-orange-50 text-orange-600 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}
+            >
+              All Brands
+            </button>
+            {brands.slice(0, 12).map((b) => (
+              <button
+                key={b.id}
+                onClick={() => setParam("brand", b.slug)}
+                className={`block w-full text-left px-3 py-1.5 rounded-lg text-sm ${brand === b.slug ? "bg-orange-50 text-orange-600 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}
+              >
+                {b.name}
+              </button>
+            ))}
+          </FilterGroup>
+
+          <FilterGroup title="Availability">
+            <label className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={inStock}
+                onChange={(e) => setParam("inStock", e.target.checked ? "true" : "")}
+                className="accent-orange-500"
+              />
+              In stock only
+            </label>
+          </FilterGroup>
+
+          {hasActiveFilters && (
+            <button onClick={() => router.push("/shop")} className="text-sm text-red-500 hover:underline px-3">
+              Clear all filters
+            </button>
+          )}
+        </aside>
+
+        {/* Product grid */}
+        <div className="flex-1">
+          {wishMsg && (
+            <div className="mb-4 bg-blue-50 text-blue-700 text-sm rounded-lg px-4 py-2.5">{wishMsg}</div>
+          )}
+
+          {loading ? (
+            <div className="flex items-center justify-center py-24">
+              <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+            </div>
+          ) : products.length === 0 ? (
+            <div className="text-center py-24 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+              <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <h3 className="font-bold text-gray-700">No products found</h3>
+              <p className="text-sm text-gray-500 mt-1">Try removing some filters or a different search term.</p>
+              <button onClick={() => router.push("/shop")} className="mt-4 text-sm font-bold text-orange-600 hover:underline">
+                Browse all products
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                {products.map((p) => {
+                  const price = parseFloat(p.price);
+                  const mrp = p.mrp ? parseFloat(p.mrp) : null;
+                  const off = mrp && mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
+                  return (
+                    <div key={p.id} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
+                      <div className="aspect-square bg-gray-50 relative">
+                        <Link href={`/shop/${p.slug}`}>
+                          {p.imageUrl ? (
+                            <Image src={p.imageUrl} alt={p.name} fill className="object-cover group-hover:scale-105 transition-transform" sizes="300px" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center"><Package className="w-8 h-8 text-gray-300" /></div>
+                          )}
+                        </Link>
+                        {off > 0 && <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md">{off}% OFF</span>}
+                        <button
+                          onClick={() => toggleWishlist(p.id)}
+                          className="absolute top-2 right-2 p-1.5 bg-white/90 rounded-full shadow"
+                          aria-label="Toggle wishlist"
+                        >
+                          <Heart className={`w-4 h-4 ${wishlist.includes(p.id) ? "fill-red-500 text-red-500" : "text-gray-400"}`} />
+                        </button>
+                        {p.stock === 0 && (
+                          <span className="absolute inset-0 bg-white/70 flex items-center justify-center text-sm font-bold text-gray-500">Out of stock</span>
+                        )}
+                      </div>
+                      <div className="p-3">
+                        <p className="text-[10px] uppercase tracking-wide text-gray-400 font-bold">{p.brandName || p.categoryName}</p>
+                        <Link href={`/shop/${p.slug}`} className="text-sm font-semibold text-gray-900 line-clamp-2 hover:text-orange-600 min-h-[40px]">{p.name}</Link>
+                        {p.reviewCount > 0 && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                            <span className="text-xs text-gray-500">{p.rating} ({p.reviewCount})</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="font-extrabold text-gray-900">₹{price.toFixed(0)}</span>
+                          {mrp && mrp > price && <span className="text-xs text-gray-400 line-through">₹{mrp.toFixed(0)}</span>}
+                        </div>
+                        <button
+                          onClick={() => addToCart(p.id)}
+                          disabled={p.stock === 0}
+                          className={`w-full mt-2 py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${p.stock === 0 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : addedId === p.id ? "bg-teal-600 text-white" : "bg-orange-500 hover:bg-orange-600 text-white"}`}
+                        >
+                          {p.stock === 0 ? "Out of stock" : addedId === p.id ? <><Check className="w-3.5 h-3.5" /> Added</> : <><ShoppingBag className="w-3.5 h-3.5" /> Add to Cart</>}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-10">
+                  <button
+                    onClick={() => setParam("page", String(page - 1))}
+                    disabled={page <= 1}
+                    className="p-2 border border-gray-200 rounded-lg disabled:opacity-40"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="text-sm text-gray-600 px-3">Page {page} of {totalPages}</span>
+                  <button
+                    onClick={() => setParam("page", String(page + 1))}
+                    disabled={page >= totalPages}
+                    className="p-2 border border-gray-200 rounded-lg disabled:opacity-40"
+                  >
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-                <p className="text-sm font-bold text-gray-500 mb-6 line-clamp-1">{reviewModalProduct.name}</p>
-
-                <form onSubmit={submitReview} className="space-y-6">
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Rating</label>
-                    <div className="flex items-center gap-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          type="button"
-                          onClick={() => setReviewForm({ ...reviewForm, rating: star })}
-                          className="transition-all hover:scale-110"
-                        >
-                          <Star className={`w-8 h-8 ${star <= reviewForm.rating ? "text-yellow-500 fill-yellow-500" : "text-gray-200"}`} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Comment (optional)</label>
-                    <textarea
-                      rows={4}
-                      placeholder="Share your experience with this product..."
-                      className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-sm font-medium resize-none"
-                      value={reviewForm.comment}
-                      onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setReviewModalProduct(null)}
-                      className="flex-1 py-4 bg-gray-50 text-gray-500 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-100 transition-all"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      disabled={submittingReview}
-                      className="flex-1 py-4 bg-[hsl(var(--primary))] text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-orange-500/20 hover:scale-[1.02] transition-all disabled:opacity-70 flex items-center justify-center gap-2"
-                    >
-                      {submittingReview ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-4 h-4" /> Submit Review</>}
-                    </button>
-                  </div>
-                </form>
-
-                {/* Existing Reviews in Modal */}
-                {productReviews[reviewModalProduct.id] && productReviews[reviewModalProduct.id].length > 0 && (
-                  <div className="mt-8 pt-6 border-t border-gray-100">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
-                      All Reviews ({productReviews[reviewModalProduct.id].length})
-                    </p>
-                    <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-                      {productReviews[reviewModalProduct.id].map((review: any) => (
-                        <div key={review.id} className="p-4 bg-gray-50 rounded-2xl">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-1.5">
-                              <User className="w-3.5 h-3.5 text-gray-400" />
-                              <span className="text-xs font-bold text-gray-500">{review.userName || "Anonymous"}</span>
-                            </div>
-                            <span className="text-[9px] font-bold text-gray-300">{new Date(review.createdAt).toLocaleDateString("en-IN")}</span>
-                          </div>
-                          <div className="flex items-center gap-1 mb-2">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} className={`w-3 h-3 ${i < review.rating ? "text-yellow-500 fill-yellow-500" : "text-gray-200"}`} />
-                            ))}
-                          </div>
-                          {review.comment && (
-                            <p className="text-xs font-medium text-gray-500">{review.comment}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Cart Sidebar Panel */}
-      <AnimatePresence>
-        {cartOpen && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setCartOpen(false)}
-              className="fixed inset-0 bg-[hsl(var(--secondary))]/20 backdrop-blur-md z-[60]"
-            />
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 26, stiffness: 210 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white z-[70] shadow-2xl p-8 flex flex-col rounded-l-[3rem]"
-            >
-              {/* Cart Header */}
-              <div className="flex items-center justify-between mb-10">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-500">
-                    <ShoppingCart className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-black text-[hsl(var(--secondary))] tracking-tight">Shopping Bag</h2>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{cart.length} Premium Items</p>
-                  </div>
-                </div>
-                <button onClick={() => setCartOpen(false)} className="p-3 bg-gray-50 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all cursor-pointer">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Cart Products Scroll */}
-              <div className="flex-1 overflow-y-auto space-y-6 pr-2 no-scrollbar">
-                {cart.length === 0 ? (
-                  <div className="text-center py-24 space-y-4">
-                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-2xl">🛍️</div>
-                    <p className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Your bag is currently empty.</p>
-                  </div>
-                ) : (
-                  cart.map((item) => (
-                    <div key={item.id} className="flex gap-4 pb-6 border-b border-gray-50 group items-center">
-                      <div className="w-20 h-20 bg-gray-50 rounded-xl overflow-hidden shrink-0 relative flex items-center justify-center">
-                        <Image src={item.imageUrl} alt={item.name} fill className="object-contain p-2" />
-                      </div>
-                      <div className="flex-1 flex flex-col justify-center space-y-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <h4 className="font-black text-[hsl(var(--secondary))] text-sm tracking-tight leading-tight line-clamp-1">{item.name}</h4>
-                          <button onClick={() => removeFromCart(item.id)} className="text-gray-300 hover:text-red-500 transition-colors cursor-pointer shrink-0">
-                             <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <div className="flex items-center justify-between">
-                           <div className="flex items-center gap-0.5 text-base font-black text-orange-500">
-                             <IndianRupee className="w-3.5 h-3.5" />
-                             {item.price}
-                           </div>
-                           <div className="flex items-center gap-3 bg-gray-50 p-1.5 rounded-lg border border-gray-100">
-                              <button 
-                                onClick={() => updateQty(item.id, -1)}
-                                className="w-6 h-6 bg-white rounded shadow-sm flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all cursor-pointer"
-                              >
-                                 <Minus className="w-3 h-3" />
-                              </button>
-                              <span className="font-black text-xs w-4 text-center">{item.qty}</span>
-                              <button 
-                                onClick={() => updateQty(item.id, 1)}
-                                className="w-6 h-6 bg-white rounded shadow-sm flex items-center justify-center hover:bg-green-50 hover:text-green-500 transition-all cursor-pointer"
-                              >
-                                 <Plus className="w-3 h-3" />
-                              </button>
-                           </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Checkout Controls */}
-              <div className="pt-8 border-t border-gray-100 space-y-4 mt-6">
-                <div className="flex items-center justify-between text-xl font-black">
-                  <span className="text-gray-400 uppercase tracking-widest text-[10px]">Subtotal</span>
-                  <div className="flex items-center gap-0.5 text-[hsl(var(--secondary))]">
-                    <IndianRupee className="w-5 h-5" />
-                    {total.toLocaleString('en-IN')}
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                   <Link 
-                     href="/checkout" 
-                     className="w-full py-4.5 bg-[hsl(var(--secondary))] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-xl hover:bg-orange-500 transition-all"
-                   >
-                     Confirm Order <ChevronRight className="w-4.5 h-4.5" />
-                   </Link>
-
-                   {cart.length > 0 && (
-                     <a 
-                       href={getWhatsAppCheckoutUrl()}
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       className="w-full py-4.5 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-md transition-all"
-                     >
-                       Order via WhatsApp 💬
-                     </a>
-                   )}
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">{title}</h4>
+      <div className="space-y-0.5">{children}</div>
     </div>
   );
 }
 
 export default function ShopPage() {
   return (
-    <Suspense fallback={<div className="pt-40 text-center font-bold text-gray-400 uppercase tracking-widest text-xs">Loading PawStore...</div>}>
+    <Suspense fallback={<div className="flex items-center justify-center py-32"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>}>
       <ShopContent />
     </Suspense>
   );

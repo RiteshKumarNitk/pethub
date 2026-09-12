@@ -26,7 +26,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, species, breed, age, weight, imageUrl } = body;
+    const { name, species, breed, gender, birthDate, ageYears, weightKg, imageUrl, vaccinations, medicalNotes, groomerNotes } = body;
 
     const [updated] = await db
       .update(pets)
@@ -34,9 +34,15 @@ export async function PUT(
         name: name || existing[0].name,
         species: species || existing[0].species,
         breed: breed !== undefined ? breed : existing[0].breed,
-        age: age !== undefined ? parseInt(age) : existing[0].age,
-        weight: weight !== undefined ? weight.toString() : existing[0].weight,
+        gender: gender !== undefined ? gender : existing[0].gender,
+        birthDate: birthDate !== undefined ? birthDate : existing[0].birthDate,
+        ageYears: ageYears !== undefined ? (ageYears ? parseInt(ageYears) : null) : existing[0].ageYears,
+        weightKg: weightKg !== undefined ? (weightKg ? String(weightKg) : null) : existing[0].weightKg,
         imageUrl: imageUrl !== undefined ? imageUrl : existing[0].imageUrl,
+        vaccinations: vaccinations !== undefined ? vaccinations : existing[0].vaccinations,
+        medicalNotes: medicalNotes !== undefined ? medicalNotes : existing[0].medicalNotes,
+        groomerNotes: groomerNotes !== undefined ? groomerNotes : existing[0].groomerNotes,
+        updatedAt: new Date(),
       })
       .where(eq(pets.id, petId))
       .returning();

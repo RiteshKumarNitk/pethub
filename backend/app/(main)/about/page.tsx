@@ -1,88 +1,77 @@
-"use client";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Heart, ShieldCheck, Users, Store, BadgeCheck, MapPin, Clock, Phone } from "lucide-react";
 
-import Image from "next/image";
-import { Heart, ShieldCheck, Users, Zap, CheckCircle2 } from "lucide-react";
-import { motion } from "framer-motion";
+export const metadata: Metadata = {
+  title: "About Us — A Real Shop for Real Pet Parents",
+  description:
+    "PawStore is a physical pet-care shop and trusted online destination. Learn who we are, how we verify listings, and why pet parents trust us.",
+};
 
 export default function AboutPage() {
   return (
-    <div className="pt-32 pb-20">
-      <div className="container mx-auto px-6">
-        {/* About Hero */}
-        <div className="max-w-4xl mx-auto text-center mb-24">
-           <motion.div 
-             initial={{ opacity: 0, y: 20 }}
-             animate={{ opacity: 1, y: 0 }}
-             className="inline-flex items-center gap-2 px-4 py-2 bg-orange-50 text-orange-600 rounded-full mb-8 font-extrabold text-xs uppercase tracking-[0.2em]"
-           >
-              <Heart className="w-4 h-4" /> Our Mission
-           </motion.div>
-           <h1 className="text-5xl md:text-7xl font-black text-[hsl(var(--secondary))] mb-8 leading-tight">
-             Revolutionizing Pet Care in <span className="text-[hsl(var(--primary))]">India</span>
-           </h1>
-           <p className="text-xl text-gray-500 font-medium leading-relaxed">
-             PawStore was born out of a simple idea: every pet deserves the best food, accessories, and care products. 
-              We are building India&apos;s largest trusted ecosystem for pet parents, shelters, and service providers.
-           </p>
-        </div>
+    <div className="max-w-5xl mx-auto px-4 py-12">
+      {/* Hero */}
+      <div className="text-center max-w-3xl mx-auto mb-14">
+        <span className="inline-flex items-center gap-2 bg-orange-50 text-orange-600 rounded-full mb-6 px-4 py-2 font-extrabold text-xs uppercase tracking-[0.15em]">
+          <Heart className="w-4 h-4" /> Our Story
+        </span>
+        <h1 className="text-4xl md:text-5xl font-black text-gray-900 leading-tight">
+          A real shop, behind every listing.
+        </h1>
+        <p className="text-lg text-gray-500 mt-5 leading-relaxed">
+          PawStore started as a neighbourhood pet-care shop — the kind where groomers know every dog by name.
+          We built this platform to bring that same trust online: honest products, verified pets, and care
+          advice you can actually use.
+        </p>
+      </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-32">
-           {[
-             { label: "Pets Adopted", value: "2,500+" },
-             { label: "Verified Shelters", value: "150+" },
-             { label: "Care Experts", value: "400+" },
-             { label: "Happy Parents", value: "10k+" },
-           ].map((stat, i) => (
-             <div key={i} className="text-center p-8 bg-gray-50 rounded-[2.5rem] border border-gray-100">
-                <p className="text-4xl font-black text-[hsl(var(--secondary))] mb-2">{stat.value}</p>
-                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">{stat.label}</p>
-             </div>
-           ))}
-        </div>
+      {/* What we do */}
+      <div className="grid md:grid-cols-4 gap-4 mb-14">
+        {[
+          { icon: Store, title: "Physical shop", desc: "Visit us, meet pets in person, get face-to-face advice." },
+          { icon: BadgeCheck, title: "Verified pets", desc: "Every pet from our shop is health-checked by us." },
+          { icon: ShieldCheck, title: "Moderated listings", desc: "Community listings are reviewed before going live." },
+          { icon: Users, title: "Community rehoming", desc: "Helping pets find homes — responsibly and safely." },
+        ].map((v) => (
+          <div key={v.title} className="bg-white border border-gray-100 rounded-2xl p-5">
+            <v.icon className="w-7 h-7 text-orange-500 mb-3" />
+            <h3 className="font-bold text-gray-900 text-sm">{v.title}</h3>
+            <p className="text-xs text-gray-500 mt-1">{v.desc}</p>
+          </div>
+        ))}
+      </div>
 
-        {/* Values */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-32">
-           {[
-             { title: "Trust & Safety", desc: "Every listing and service provider is manually verified by our team.", icon: ShieldCheck },
-             { title: "Community First", desc: "We support shelters and independent rescuers with zero listing fees.", icon: Users },
-             { title: "Instant Access", desc: "Book services or find products with a seamless, mobile-first experience.", icon: Zap },
-           ].map((val, i) => (
-             <div key={i} className="space-y-6">
-                <div className="w-16 h-16 bg-[hsl(var(--secondary))] text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-900/10">
-                   <val.icon className="w-8 h-8" />
-                </div>
-                <h3 className="text-2xl font-bold text-[hsl(var(--secondary))]">{val.title}</h3>
-                <p className="text-gray-500 font-medium leading-relaxed">{val.desc}</p>
-             </div>
-           ))}
+      {/* Trust & Safety */}
+      <div id="trust" className="bg-teal-50 border border-teal-100 rounded-3xl p-8 mb-14">
+        <h2 className="text-2xl font-black text-teal-900 flex items-center gap-2.5">
+          <ShieldCheck className="w-7 h-7 text-teal-700" /> Trust &amp; Safety
+        </h2>
+        <div className="grid md:grid-cols-2 gap-6 mt-5 text-sm text-teal-900/80">
+          <div className="space-y-3">
+            <p><strong className="text-teal-900">Business vs community — always clear.</strong> Pets from our shop are badged "Verified by our shop". Community listings are labelled and never presented as verified by us.</p>
+            <p><strong className="text-teal-900">Manual review.</strong> Every community listing is reviewed by our team before publication — with photos, vaccination claims and pricing checked for basic legitimacy.</p>
+          </div>
+          <div className="space-y-3">
+            <p><strong className="text-teal-900">Report and act.</strong> Every listing has a report button. Reports are reviewed by humans, and listings with repeated welfare or fraud concerns are suspended.</p>
+            <p><strong className="text-teal-900">Animal welfare first.</strong> We reject listings involving prohibited species or signs of poor welfare, and we encourage in-person meetings before any transaction.</p>
+          </div>
         </div>
+      </div>
 
-        {/* Team / Story Section */}
-        <div className="grid md:grid-cols-2 gap-16 items-center p-16 bg-[hsl(var(--secondary))] rounded-[4rem] text-white relative overflow-hidden shadow-2xl">
-           <div className="relative z-10">
-              <h2 className="text-4xl font-bold mb-8">Building the Future of Pet Ownership</h2>
-              <div className="space-y-6 mb-12">
-                 {[
-                   "Secure OTP-based identity verification",
-                   "Verified adoption marketplace across 20+ cities",
-                   "Seamless Razorpay-integrated pet shop",
-                   "Real-time booking with localized care experts"
-                 ].map((point, i) => (
-                   <div key={i} className="flex items-center gap-4">
-                      <CheckCircle2 className="w-6 h-6 text-[hsl(var(--primary))]" />
-                      <p className="font-bold tracking-tight">{point}</p>
-                   </div>
-                 ))}
-              </div>
-              <button className="btn-primary">Learn More About Us</button>
-           </div>
-           <div className="relative h-[500px] rounded-[3rem] overflow-hidden border-8 border-white/10 z-10">
-              <Image src="/images/hero.png" alt="Happy Pets" fill className="object-cover" />
-           </div>
-           {/* Decorative elements */}
-           <div className="absolute top-0 right-0 w-96 h-96 bg-[hsl(var(--primary))]/10 rounded-full blur-3xl -mr-48 -mt-48"></div>
-           <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -ml-48 -mb-48"></div>
+      {/* Visit */}
+      <div className="bg-gray-900 text-white rounded-3xl p-8 md:p-10 grid md:grid-cols-2 gap-8 items-center">
+        <div>
+          <h2 className="text-2xl font-black mb-4">Come say hello 🐾</h2>
+          <div className="space-y-2.5 text-sm text-gray-300">
+            <p className="flex items-center gap-2.5"><MapPin className="w-4 h-4 text-orange-400" /> 123 Pet Street, Mumbai 400001</p>
+            <p className="flex items-center gap-2.5"><Clock className="w-4 h-4 text-orange-400" /> Mon–Sun, 9:00 AM – 8:00 PM</p>
+            <p className="flex items-center gap-2.5"><Phone className="w-4 h-4 text-orange-400" /> +91 98765 43210</p>
+          </div>
+        </div>
+        <div className="flex md:justify-end gap-3">
+          <Link href="/services" className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl">Book a Service</Link>
+          <Link href="/contact" className="bg-white/10 hover:bg-white/20 border border-white/20 font-bold px-6 py-3 rounded-xl">Contact Us</Link>
         </div>
       </div>
     </div>

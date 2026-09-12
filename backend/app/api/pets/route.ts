@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, species, breed, age, weight, imageUrl } = body;
+    const { name, species, breed, gender, birthDate, ageYears, weightKg, imageUrl, vaccinations, medicalNotes, groomerNotes } = body;
 
     if (!name || !species) {
       return NextResponse.json({ error: "Name and species are required" }, { status: 400 });
@@ -44,9 +44,14 @@ export async function POST(request: NextRequest) {
         name,
         species,
         breed: breed || null,
-        age: age ? parseInt(age) : null,
-        weight: weight ? weight.toString() : null,
+        gender: gender || null,
+        birthDate: birthDate || null,
+        ageYears: ageYears ? parseInt(ageYears) : null,
+        weightKg: weightKg ? String(weightKg) : null,
         imageUrl: imageUrl || null,
+        vaccinations: Array.isArray(vaccinations) ? vaccinations : [],
+        medicalNotes: medicalNotes || null,
+        groomerNotes: groomerNotes || null,
       })
       .returning();
 

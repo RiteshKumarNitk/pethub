@@ -72,7 +72,7 @@ export default function CustomerLoginPage() {
       const data = await res.json();
       if (res.ok) {
         const isAdmin = data.user?.role === "admin";
-        router.push(isAdmin ? "/admin" : "/dashboard");
+        router.push(isAdmin ? "/admin" : "/account");
       } else {
         setError(data.error || "Invalid OTP");
       }

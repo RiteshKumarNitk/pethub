@@ -1,14 +1,21 @@
 import Razorpay from "razorpay";
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+let _client: Razorpay | null = null;
 
-export { razorpay };
+function getClient(): Razorpay {
+  if (!_client) {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keyId || !keySecret) {
+      throw new Error("Razorpay is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.");
+    }
+    _client = new Razorpay({ key_id: keyId, key_secret: keySecret });
+  }
+  return _client;
+}
 
 export async function createRazorpayOrder(amount: number, receipt: string) {
-  return razorpay.orders.create({
+  return getClient().orders.create({
     amount: Math.round(amount * 100),
     currency: "INR",
     receipt,
@@ -21,10 +28,12 @@ export function verifyPaymentSignature(data: {
   razorpay_signature: string;
 }) {
   const crypto = require("crypto");
+  const secret = process.env.RAZORPAY_KEY_SECRET;
+  if (!secret) return false;
   const generatedSignature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+    .createHmac("sha256", secret)
     .update(`${data.razorpay_order_id}|${data.razorpay_payment_id}`)
     .digest("hex");
-  
+
   return generatedSignature === data.razorpay_signature;
 }

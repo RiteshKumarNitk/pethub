@@ -43,7 +43,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protect Dashboard Routes
-  if (pathname.startsWith("/dashboard")) {
+  if (pathname.startsWith("/account")) {
     if (!token) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
@@ -64,7 +64,7 @@ export async function middleware(request: NextRequest) {
         if (payload.role === "admin") {
           return NextResponse.redirect(new URL("/admin", request.url));
         }
-        return NextResponse.redirect(new URL("/dashboard", request.url));
+        return NextResponse.redirect(new URL("/account", request.url));
       } catch {
         // Invalid token, allow staying on login
         return NextResponse.next();
