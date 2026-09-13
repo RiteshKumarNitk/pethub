@@ -10,7 +10,6 @@
 /.next/
 /out/
 
-.env.example
 # production
 /build
 
