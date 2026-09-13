@@ -8,12 +8,7 @@ import {
 } from "lucide-react";
 
 const SPECIES = ["Dog", "Cat", "Bird", "Small Pet", "Other"];
-const PRICE_TYPES = [
-  { value: "fixed", label: "Fixed price" },
-  { value: "negotiable", label: "Negotiable" },
-  { value: "adoption_fee", label: "Adoption fee" },
-  { value: "free", label: "Free to good home" },
-];
+const isAdoptionType = (t: string) => t === "free" || t === "adoption_fee";
 
 export default function SellRehomePage() {
   const router = useRouter();
@@ -208,16 +203,42 @@ export default function SellRehomePage() {
 
         {/* Rehoming details */}
         <section className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-          <h2 className="font-bold text-gray-900 mb-4">Rehoming details</h2>
+          <h2 className="font-bold text-gray-900 mb-1">What kind of listing is this?</h2>
+          <p className="text-xs text-gray-500 mb-4">Adoption listings appear with a “Free to good home” treatment and stay enquiry-first.</p>
+          <div className="grid sm:grid-cols-2 gap-3 mb-5">
+            {([
+              { intent: "sale", title: "For Sale", desc: "Selling your pet with a price", icon: "₹" },
+              { intent: "adoption", title: "For Adoption", desc: "Rehoming to a loving family", icon: "♥" },
+            ] as const).map((opt) => {
+              const active = isAdoptionType(form.priceType) === (opt.intent === "adoption");
+              return (
+                <button
+                  key={opt.intent}
+                  type="button"
+                  onClick={() => set("priceType", opt.intent === "adoption" ? "free" : "fixed")}
+                  className={`text-left rounded-2xl border-2 p-4 transition-colors ${active ? "border-teal-600 bg-teal-50" : "border-gray-200 hover:border-teal-300"}`}
+                >
+                  <span className="flex items-center gap-2 font-bold text-gray-900">
+                    <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm ${active ? "bg-teal-600 text-white" : "bg-gray-100 text-gray-500"}`}>{opt.icon}</span>
+                    {opt.title}
+                  </span>
+                  <span className="block text-xs text-gray-500 mt-1.5">{opt.desc}</span>
+                </button>
+              );
+            })}
+          </div>
           <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Listing type *">
-              <select value={form.priceType} onChange={(e) => set("priceType", e.target.value)} className={inputCls}>
-                {PRICE_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </Field>
+            {isAdoptionType(form.priceType) && (
+              <Field label="Adoption preference">
+                <select value={form.priceType} onChange={(e) => set("priceType", e.target.value)} className={inputCls}>
+                  <option value="free">Free to good home</option>
+                  <option value="adoption_fee">Small adoption fee (helps serious enquirers)</option>
+                </select>
+              </Field>
+            )}
             {form.priceType !== "free" && (
-              <Field label="Price (₹) *">
-                <input value={form.price} onChange={(e) => set("price", e.target.value)} type="number" min="0" className={inputCls} placeholder="e.g. 5000" />
+              <Field label={form.priceType === "adoption_fee" ? "Adoption fee (₹) *" : "Price (₹) *"}>
+                <input value={form.price} onChange={(e) => set("price", e.target.value)} type="number" min="0" className={inputCls} placeholder={form.priceType === "adoption_fee" ? "e.g. 500" : "e.g. 5000"} />
               </Field>
             )}
             <Field label="Reason for rehoming / description *">

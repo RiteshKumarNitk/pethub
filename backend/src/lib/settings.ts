@@ -16,6 +16,7 @@ export type SiteSettings = {
   shippingFee: number;
   freeShippingAbove: number;
   taxPercent: number;
+  storePickupEnabled: boolean;
   bookingSlotMinutes: number;
   bookingOpenDays: number[];
   bookingOpenTime: string; // "09:00"
@@ -23,6 +24,15 @@ export type SiteSettings = {
   bookingMinLeadHours: number;
   bookingMaxAdvanceDays: number;
   listingModerationNotice: string;
+  // Loyalty program (Sprint 3) — earn 1 pt per ₹N spent on paid orders; 1 pt = ₹1 redeemable value
+  loyaltyEarnPerRupee: number;
+  loyaltyMinRedeemPoints: number;
+  loyaltyMaxRedeemPercent: number; // cap redemption at this % of order subtotal
+  // Subscriptions (Sprint 3) — per-cycle discount on auto-ship orders
+  subscriptionDiscountPercent: number;
+  // Referral rewards (Sprint 3) — points granted when a new user signs up with a code
+  referralRefereePoints: number;
+  referralReferrerPoints: number;
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -39,6 +49,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   shippingFee: 50,
   freeShippingAbove: 499,
   taxPercent: 0,
+  storePickupEnabled: true,
   bookingSlotMinutes: 60,
   bookingOpenDays: [1, 2, 3, 4, 5, 6, 0],
   bookingOpenTime: "09:00",
@@ -47,6 +58,12 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   bookingMaxAdvanceDays: 30,
   listingModerationNotice:
     "All listings are reviewed by our team before they go live. Listings that appear unsafe, misleading, or related to prohibited species will be rejected.",
+  loyaltyEarnPerRupee: 100, // 1 point per ₹100 paid
+  loyaltyMinRedeemPoints: 50, // must redeem at least 50 pts
+  loyaltyMaxRedeemPercent: 30, // points can cover at most 30% of subtotal
+  subscriptionDiscountPercent: 5, // auto-ship cycles get 5% off
+  referralRefereePoints: 50, // new customer bonus
+  referralReferrerPoints: 100, // referrer bonus
 };
 
 // Cache settings for the duration of a serverless invocation

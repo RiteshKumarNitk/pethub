@@ -6,12 +6,12 @@ interface Listing {
   id: number; slug: string; name: string; species: string; breed: string | null;
   gender: string | null; ageText: string | null; price: string | null; priceType: string;
   listingType: string; isVerified: boolean; city: string | null; vaccinated: boolean;
-  primaryImage: string | null;
+  primaryImage: string | null; intent?: string;
 }
 
 export function PetGridCard({ pet }: { pet: Listing }) {
   const isBusiness = pet.listingType === "business";
-  const isFree = pet.priceType === "free";
+  const isAdoption = (pet.intent ?? (pet.priceType === "free" || pet.priceType === "adoption_fee" ? "adoption" : "sale")) === "adoption";
   return (
     <Link href={`/pets/${pet.slug}`} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
       <div className="aspect-[4/3] bg-gradient-to-br from-teal-50 to-orange-50 relative">
@@ -29,7 +29,12 @@ export function PetGridCard({ pet }: { pet: Listing }) {
             <Users className="w-3 h-3" /> COMMUNITY
           </span>
         )}
-        {pet.vaccinated && (
+        {isAdoption && (
+          <span className="absolute bottom-2 left-2 bg-pink-500/95 text-white text-[9px] font-bold px-2 py-1 rounded-md">
+            FOR ADOPTION
+          </span>
+        )}
+        {!isAdoption && pet.vaccinated && (
           <span className="absolute bottom-2 left-2 bg-white/95 text-teal-700 text-[9px] font-bold px-2 py-1 rounded-md border border-teal-100">
             Vaccinated
           </span>
@@ -43,7 +48,13 @@ export function PetGridCard({ pet }: { pet: Listing }) {
         <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{[pet.breed, pet.ageText].filter(Boolean).join(" · ")}</p>
         <div className="flex items-center justify-between mt-2">
           <p className="text-sm font-extrabold text-teal-700">
-            {isFree ? "Free" : pet.price ? `₹${parseFloat(pet.price).toFixed(0)}` : "Enquire"}
+            {isAdoption && !pet.price
+              ? "Free to good home"
+              : isAdoption && pet.price
+                ? `Adoption fee ₹${parseFloat(pet.price).toFixed(0)}`
+                : pet.price
+                  ? `₹${parseFloat(pet.price).toFixed(0)}`
+                  : "Enquire"}
           </p>
           {pet.city && <p className="text-xs text-gray-400 flex items-center gap-0.5"><MapPin className="w-3 h-3" />{pet.city}</p>}
         </div>

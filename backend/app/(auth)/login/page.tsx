@@ -66,6 +66,7 @@ export default function CustomerLoginPage() {
         body: JSON.stringify({
           phone: formData.phone,
           otp: formData.otp,
+          ref: new URLSearchParams(window.location.search).get("ref") || undefined,
         }),
       });
 

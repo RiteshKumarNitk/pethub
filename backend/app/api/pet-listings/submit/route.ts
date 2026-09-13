@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
         size: size || null,
         price: price ? parseFloat(price).toString() : null,
         priceType: effectivePriceType,
+        intent: effectivePriceType === "free" || effectivePriceType === "adoption_fee" ? "adoption" : "sale",
         city: city || null,
         state: state || null,
         description: description || null,

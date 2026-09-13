@@ -49,9 +49,7 @@ export async function PUT(request: NextRequest) {
     if (body.name !== undefined) patch.name = body.name?.trim() || null;
     if (body.email !== undefined) patch.email = body.email?.trim() || null;
 
-    const [updated] = await db.update(users).set(patch).where(eq(users.id, userId)).returning({
-      id: users.id, name: users.name, phone: users.phone, email: users.email, role: users.role,
-    });
+    const [updated] = await db.update(users).set(patch).where(eq(users.id, userId)).returning();
 
     return NextResponse.json({ user: updated });
   } catch (error) {

@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { orders, orderItems, products, productVariants, coupons, payments } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { createNotification } from "@/lib/notifications";
+import { earnForOrder } from "@/lib/loyalty";
 
 /**
  * Razorpay webhook — source of truth for payment events.
@@ -73,6 +74,8 @@ export async function POST(request: NextRequest) {
             link: "/account/orders",
           });
         }
+        // Award loyalty points for the paid order (idempotent, non-fatal)
+        await earnForOrder(order.id);
       }
     } else if (event.event === "payment.failed" && order) {
       await db.update(payments).set({ status: "failed", raw: event, updatedAt: new Date() })

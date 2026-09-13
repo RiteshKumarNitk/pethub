@@ -17,36 +17,44 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
-const categories = ["Food", "Accessories", "Care & Hygiene", "Toys", "Health"];
-
+interface Cat { id: number; name: string; slug: string; petType: string; parentId: number | null; active: boolean }
+interface Brand { id: number; name: string }
 interface Product {
   id: number;
   name: string;
   description: string | null;
   price: string;
-  category: string;
+  mrp: string | null;
+  categoryId: number | null;
+  categoryName?: string | null;
+  brandId: number | null;
+  petType: string;
   stock: number;
+  storeStock: number;
+  lifeStages: string[];
   imageUrl: string | null;
+  isFeatured: boolean;
+  isBestSeller: boolean;
+  subscriptionEligible: boolean;
   active: boolean;
-  createdAt: string;
 }
+
+const emptyForm = {
+  name: "", description: "", price: "", mrp: "", categoryId: "", brandId: "",
+  petType: "all", stock: 0, storeStock: 0, lifeStages: [] as string[],
+  imageUrl: "", isFeatured: false, isBestSeller: false, subscriptionEligible: false, active: true,
+};
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [cats, setCats] = useState<Cat[]>([]);
+  const [brandList, setBrandList] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    price: "",
-    category: "Food",
-    stock: 0,
-    imageUrl: "",
-    active: true,
-  });
+  const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
     fetchProducts();
@@ -58,6 +66,10 @@ export default function AdminProductsPage() {
       const res = await fetch("/api/admin/products");
       const data = await res.json();
       if (data.products) setProducts(data.products);
+      const taxRes = await fetch("/api/admin/categories");
+      const taxData = await taxRes.json();
+      if (taxData.categories) setCats(taxData.categories);
+      if (taxData.brands) setBrandList(taxData.brands);
     } catch (err) {
       console.error(err);
     } finally {
@@ -67,7 +79,7 @@ export default function AdminProductsPage() {
 
   const openCreate = () => {
     setEditingProduct(null);
-    setForm({ name: "", description: "", price: "", category: "Food", stock: 0, imageUrl: "", active: true });
+    setForm(emptyForm);
     setShowModal(true);
   };
 
@@ -77,9 +89,17 @@ export default function AdminProductsPage() {
       name: product.name,
       description: product.description || "",
       price: product.price,
-      category: product.category,
+      mrp: product.mrp || "",
+      categoryId: product.categoryId ? String(product.categoryId) : "",
+      brandId: product.brandId ? String(product.brandId) : "",
+      petType: product.petType || "all",
       stock: product.stock,
+      storeStock: product.storeStock ?? 0,
+      lifeStages: product.lifeStages ?? [],
       imageUrl: product.imageUrl || "",
+      isFeatured: !!product.isFeatured,
+      isBestSeller: !!product.isBestSeller,
+      subscriptionEligible: !!product.subscriptionEligible,
       active: product.active,
     });
     setShowModal(true);
@@ -92,7 +112,8 @@ export default function AdminProductsPage() {
       if (editingProduct) {
         const res = await fetch(`/api/admin/products/${editingProduct.id}`, {
           method: "PUT",
-          body: JSON.stringify(form),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...form, categoryId: form.categoryId || null, brandId: form.brandId || null }),
         });
         if (res.ok) {
           await fetchProducts();
@@ -101,7 +122,8 @@ export default function AdminProductsPage() {
       } else {
         const res = await fetch("/api/admin/products", {
           method: "POST",
-          body: JSON.stringify(form),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...form, categoryId: form.categoryId || null, brandId: form.brandId || null }),
         });
         if (res.ok) {
           await fetchProducts();
@@ -139,8 +161,17 @@ export default function AdminProductsPage() {
 
   const filtered = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.category.toLowerCase().includes(search.toLowerCase())
+    (p.categoryName || "").toLowerCase().includes(search.toLowerCase())
   );
+
+  const activeCats = cats.filter((c) => c.active);
+  const catGroups = activeCats.filter((c) => c.parentId === null);
+  const toggleLifeStage = (ls: string) => {
+    setForm((f) => ({
+      ...f,
+      lifeStages: f.lifeStages.includes(ls) ? f.lifeStages.filter((x) => x !== ls) : [...f.lifeStages, ls],
+    }));
+  };
 
   return (
     <div className="space-y-8">
@@ -207,7 +238,7 @@ export default function AdminProductsPage() {
                       {product.active ? "Active" : "Inactive"}
                     </span>
                     <span className="px-2.5 py-1 bg-gray-50 rounded-lg text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                      {product.category}
+                      {product.categoryName || "Uncategorized"}
                     </span>
                   </div>
                   <p className="text-sm text-gray-400 font-medium truncate">{product.description || "No description"}</p>
@@ -217,7 +248,7 @@ export default function AdminProductsPage() {
                       {parseFloat(product.price).toLocaleString("en-IN")}
                     </span>
                     <span className="text-xs font-bold text-gray-400">
-                      Stock: {product.stock}
+                      Online: {product.stock} · Store: {product.storeStock ?? 0}
                     </span>
                   </div>
                 </div>
@@ -299,19 +330,80 @@ export default function AdminProductsPage() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">MRP (₹, optional)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-sm font-medium"
+                    value={form.mrp}
+                    onChange={(e) => setForm({ ...form, mrp: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
                   <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Category</label>
                   <select
                     className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-sm font-medium"
-                    value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value })}
+                    value={form.categoryId}
+                    onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
                   >
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
+                    <option value="">— Select category —</option>
+                    {catGroups.map((g) => (
+                      <optgroup key={g.id} label={g.name}>
+                        <option value={g.id}>{g.name} (whole group)</option>
+                        {activeCats
+                          .filter((c) => c.parentId === g.id)
+                          .map((c) => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                          ))}
+                      </optgroup>
                     ))}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Stock</label>
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Brand</label>
+                  <select
+                    className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-sm font-medium"
+                    value={form.brandId}
+                    onChange={(e) => setForm({ ...form, brandId: e.target.value })}
+                  >
+                    <option value="">— No brand —</option>
+                    {brandList.map((b) => (
+                      <option key={b.id} value={b.id}>{b.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Pet Type</label>
+                  <select
+                    className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-sm font-medium"
+                    value={form.petType}
+                    onChange={(e) => setForm({ ...form, petType: e.target.value })}
+                  >
+                    <option value="all">All pets</option>
+                    <option value="dog">Dogs</option>
+                    <option value="cat">Cats</option>
+                    <option value="small_pet">Small Pets</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Life Stages</label>
+                  <div className="flex gap-4 px-1 py-3">
+                    {["puppy", "adult", "senior"].map((ls) => (
+                      <label key={ls} className="flex items-center gap-1.5 text-sm text-gray-600 capitalize cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={form.lifeStages.includes(ls)}
+                          onChange={() => toggleLifeStage(ls)}
+                          className="accent-orange-500"
+                        />
+                        {ls}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Stock (online)</label>
                   <input
                     type="number"
                     min="0"
@@ -319,6 +411,26 @@ export default function AdminProductsPage() {
                     value={form.stock}
                     onChange={(e) => setForm({ ...form, stock: parseInt(e.target.value) || 0 })}
                   />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Store stock (physical shop)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-sm font-medium"
+                    value={form.storeStock}
+                    onChange={(e) => setForm({ ...form, storeStock: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+                <div className="flex items-center gap-6 px-1 py-2 md:col-span-2">
+                  <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                    <input type="checkbox" checked={form.isFeatured} onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })} className="accent-orange-500" />
+                    Featured
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                    <input type="checkbox" checked={form.isBestSeller} onChange={(e) => setForm({ ...form, isBestSeller: e.target.checked })} className="accent-orange-500" />
+                    Best seller
+                  </label>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Image URL</label>
@@ -330,6 +442,16 @@ export default function AdminProductsPage() {
                   />
                 </div>
               </div>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.subscriptionEligible}
+                  onChange={(e) => setForm({ ...form, subscriptionEligible: e.target.checked })}
+                  className="w-5 h-5 accent-teal-500"
+                />
+                <span className="text-sm font-bold text-gray-500">Subscription eligible (auto-ship food &amp; consumables)</span>
+              </label>
 
               <label className="flex items-center gap-3 cursor-pointer">
                 <input

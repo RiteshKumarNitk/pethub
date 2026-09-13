@@ -209,7 +209,20 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: unknown) {
+    // Partial unique index bookings_slot_unique: someone else claimed the slot
+    // between the availability check and our insert. Translate to a friendly 409.
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      (error as { code?: string }).code === "23505"
+    ) {
+      return NextResponse.json(
+        { error: "Sorry, that slot was just taken. Please choose another time." },
+        { status: 409 }
+      );
+    }
     console.error("Create booking error:", error);
     return NextResponse.json({ error: "Failed to create booking" }, { status: 500 });
   }

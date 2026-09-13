@@ -54,6 +54,8 @@ export function computeTotals(opts: {
   discountPercent?: number;
   discountFlat?: number;
   maxDiscount?: number;
+  /** Stacks additively on top of coupon discount (e.g. loyalty points value). */
+  extraDiscountFlat?: number;
   shippingFee: number;
   freeShippingAbove: number;
   taxPercent: number;
@@ -66,6 +68,9 @@ export function computeTotals(opts: {
   }
   if (opts.discountFlat && opts.discountFlat > 0) {
     discount = Math.max(discount, opts.discountFlat);
+  }
+  if (opts.extraDiscountFlat && opts.extraDiscountFlat > 0) {
+    discount = discount + opts.extraDiscountFlat;
   }
   discount = Math.min(round2(discount), subtotal);
 

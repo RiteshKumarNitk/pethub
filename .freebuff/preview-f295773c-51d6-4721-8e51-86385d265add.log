@@ -1,11 +1,321 @@
 
 > pawstore-backend@1.0.0 dev
-> next dev -p 3000
+> next dev -p 3100
 
    ▲ Next.js 14.1.0
-   - Local:        http://localhost:3000
+   - Local:        http://localhost:3100
    - Environments: .env.local
 
- ✓ Ready in 2.3s
+ ✓ Ready in 2.1s
  ○ Compiling / ...
- ✓ Compiled / in 3.9s (1409 modules)
+ ✓ Compiled / in 24.5s (1400 modules)
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1058ms (144 modules)
+ ○ Compiling /api/mobile/me ...
+ ✓ Compiled /api/mobile/me in 2.4s (1521 modules)
+ ○ Compiling /c/[slug] ...
+ ✓ Compiled /c/[slug] in 885ms (1547 modules)
+ ○ Compiling /shop/[slug] ...
+ ✓ Compiled /shop/[slug] in 810ms (1560 modules)
+ ✓ Compiled /api/pet-listings in 334ms (866 modules)
+ ○ Compiling /pets ...
+ ✓ Compiled /pets in 1227ms (1576 modules)
+ ○ Compiling /pets/[slug] ...
+ ✓ Compiled /pets/[slug] in 812ms (1590 modules)
+ ✓ Compiled in 1432ms (1604 modules)
+ ✓ Compiled in 708ms (1574 modules)
+ ✓ Compiled /api/mobile/me in 217ms (875 modules)
+ ✓ Compiled (883 modules)
+ ✓ Compiled in 313ms (721 modules)
+ ○ Compiling /shop ...
+ ✓ Compiled /shop in 775ms (1602 modules)
+ ○ Compiling /sell-rehome ...
+ ✓ Compiled /sell-rehome in 716ms (1616 modules)
+ ✓ Compiled /api/mobile/me in 243ms (876 modules)
+ ✓ Compiled (878 modules)
+ ○ Compiling /login ...
+ ✓ Compiled /login in 659ms (1612 modules)
+ ✓ Compiled /admin/login in 424ms (1624 modules)
+ ✓ Compiled in 2.1s (1727 modules)
+ ✓ Compiled in 1472ms (1597 modules)
+ ✓ Compiled in 676ms (1597 modules)
+ ✓ Compiled in 1767ms (1741 modules)
+ ✓ Compiled in 448ms (744 modules)
+ ✓ Compiled in 429ms (744 modules)
+ ✓ Compiled in 440ms (744 modules)
+ ✓ Compiled in 470ms (744 modules)
+ ✓ Compiled in 469ms (744 modules)
+ ✓ Compiled in 699ms (744 modules)
+ ✓ Compiled in 482ms (744 modules)
+ ✓ Compiled in 441ms (744 modules)
+ ✓ Compiled in 498ms (744 modules)
+ ✓ Compiled in 492ms (744 modules)
+ ○ Compiling /store ...
+ ✓ Compiled /store in 1280ms (1598 modules)
+ ✓ Compiled in 575ms (745 modules)
+ ✓ Compiled /api/orders/reorder in 497ms (876 modules)
+ ✓ Compiled /api/cart in 281ms (879 modules)
+ ✓ Compiled /api/admin/stats in 338ms (881 modules)
+ ○ Compiling /api/auth/send-otp ...
+ ✓ Compiled /api/auth/send-otp in 9s (1683 modules)
+[DEV] OTP for +911234567890: 381295
+ ○ Compiling /api/auth/verify-otp ...
+ ✓ Compiled /api/auth/verify-otp in 1247ms (1782 modules)
+[DEV] OTP for +911234567890: 782457
+ ○ Compiling /admin ...
+ ✓ Compiled /admin in 3.2s (2570 modules)
+ ✓ Compiled in 784ms (763 modules)
+ ✓ Compiled /api/admin/stats in 449ms (1809 modules)
+ ✓ Compiled in 1209ms (1627 modules)
+ ○ Compiling /api/admin/bookings ...
+ ✓ Compiled /api/admin/bookings in 604ms (868 modules)
+ ○ Compiling /store ...
+ ✓ Compiled /store in 698ms (884 modules)
+ ✓ Compiled /api/mobile/me in 272ms (886 modules)
+ ✓ Compiled (890 modules)
+ ✓ Compiled /api/notifications in 317ms (892 modules)
+ ✓ Compiled in 1414ms (1611 modules)
+ ✓ Compiled /api/mobile/me in 251ms (870 modules)
+ ✓ Compiled (875 modules)
+ ✓ Compiled /api/notifications in 340ms (878 modules)
+ ✓ Compiled in 1ms (878 modules)
+ ✓ Compiled in 0ms (878 modules)
+ ✓ Compiled in 1ms (878 modules)
+ ✓ Compiled in 0ms (878 modules)
+ ✓ Compiled in 0ms (878 modules)
+ ○ Compiling /api/auth/send-otp ...
+ ✓ Compiled /api/auth/send-otp in 2.6s (1688 modules)
+[DEV] OTP for +919999999999: 484632
+ ○ Compiling /api/auth/verify-otp ...
+ ✓ Compiled /api/auth/verify-otp in 713ms (1787 modules)
+ ○ Compiling /account/orders ...
+ ✓ Compiled /account/orders in 1531ms (2548 modules)
+ ✓ Compiled /api/mobile/me in 392ms (1792 modules)
+ ✓ Compiled (1797 modules)
+ ✓ Compiled /api/notifications in 393ms (1800 modules)
+ ○ Compiling /api/orders ...
+ ✓ Compiled /api/orders in 763ms (1832 modules)
+ ○ Compiling /api/orders/reorder ...
+ ✓ Compiled /api/orders/reorder in 628ms (874 modules)
+ ✓ Compiled in 648ms (772 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 633ms (883 modules)
+ ✓ Compiled in 1274ms (1623 modules)
+ ✓ Compiled in 760ms (1623 modules)
+ ✓ Compiled in 905ms (1623 modules)
+ ✓ Compiled in 716ms (772 modules)
+ ✓ Compiled in 594ms (772 modules)
+ ✓ Compiled in 446ms (772 modules)
+ ✓ Compiled in 634ms (772 modules)
+ ✓ Compiled in 427ms (772 modules)
+ ✓ Compiled in 1431ms (1753 modules)
+ ✓ Compiled in 561ms (916 modules)
+ ✓ Compiled in 420ms (772 modules)
+ ○ Compiling /api/orders/reorder ...
+ ✓ Compiled /api/orders/reorder in 646ms (874 modules)
+ ○ Compiling /account/bookings ...
+ ✓ Compiled /account/bookings in 1964ms (1654 modules)
+ ✓ Compiled in 540ms (775 modules)
+ ✓ Compiled /api/bookings in 291ms (881 modules)
+ ✓ Compiled (884 modules)
+ ○ Compiling /account/listings ...
+ ✓ Compiled /api/notifications in 2.3s (1671 modules)
+ ✓ Compiled /api/pet-listings/mine in 350ms (894 modules)
+ ✓ Compiled in 1613ms (1815 modules)
+ ✓ Compiled in 740ms (779 modules)
+ ○ Compiling /account/pets ...
+ ✓ Compiled /account/pets in 1280ms (1650 modules)
+ ✓ Compiled in 1326ms (1780 modules)
+ ○ Compiling /account ...
+ ✓ Compiled /account in 1611ms (1661 modules)
+ ○ Compiling /api/pets ...
+ ✓ Compiled /api/pets in 622ms (999 modules)
+ ✓ Compiled (1007 modules)
+ ✓ Compiled / in 499ms (1015 modules)
+ ✓ Compiled /api/notifications in 395ms (1017 modules)
+ ✓ Compiled /api/home in 487ms (1019 modules)
+ ✓ Compiled in 1492ms (1940 modules)
+ ✓ Compiled in 532ms (791 modules)
+ ○ Compiling /cart ...
+ ✓ Compiled /cart in 1301ms (1820 modules)
+ ○ Compiling /api/cart ...
+ ✓ Compiled /api/cart in 564ms (1027 modules)
+ ○ Compiling /checkout ...
+ ✓ Compiled /checkout in 2.4s (1963 modules)
+ ✓ Compiled /api/addresses in 436ms (1036 modules)
+ ✓ Compiled in 576ms (799 modules)
+ ✓ Compiled /shop in 405ms (904 modules)
+ ✓ Compiled /api/products in 487ms (906 modules)
+ ✓ Compiled (910 modules)
+ ✓ Compiled in 551ms (799 modules)
+ ✓ Compiled in 1790ms (1702 modules)
+ ✓ Compiled in 1257ms (1702 modules)
+ ✓ Compiled in 551ms (799 modules)
+ ✓ Compiled in 511ms (799 modules)
+ ✓ Compiled in 524ms (799 modules)
+ ✓ Compiled in 459ms (799 modules)
+ ✓ Compiled in 1546ms (1794 modules)
+ ✓ Compiled in 569ms (799 modules)
+ ✓ Compiled in 527ms (799 modules)
+ ✓ Compiled in 444ms (799 modules)
+ ✓ Compiled in 485ms (799 modules)
+ ✓ Compiled in 452ms (799 modules)
+ ✓ Compiled in 476ms (799 modules)
+ ✓ Compiled in 642ms (799 modules)
+ ✓ Compiled in 1183ms (799 modules)
+ ✓ Compiled in 1399ms (799 modules)
+ ✓ Compiled in 668ms (799 modules)
+ ✓ Compiled in 973ms (800 modules)
+ ✓ Compiled in 717ms (800 modules)
+ ✓ Compiled in 688ms (800 modules)
+ ✓ Compiled in 702ms (800 modules)
+ ✓ Compiled in 620ms (800 modules)
+ ✓ Compiled in 774ms (800 modules)
+ ✓ Compiled in 2.4s (1654 modules)
+ ✓ Compiled in 2s (1798 modules)
+ ✓ Compiled in 1502ms (1784 modules)
+ ✓ Compiled in 822ms (801 modules)
+ ✓ Compiled in 779ms (801 modules)
+ ✓ Compiled in 893ms (801 modules)
+ ✓ Compiled in 1596ms (1654 modules)
+ ✓ Compiled in 1632ms (1656 modules)
+ ✓ Compiled in 1945ms (1800 modules)
+ ✓ Compiled in 1553ms (1786 modules)
+ ✓ Compiled in 741ms (802 modules)
+ ✓ Compiled in 610ms (802 modules)
+ ○ Compiling /api/admin/analytics ...
+ ✓ Compiled /api/admin/analytics in 893ms (876 modules)
+ ○ Compiling /api/rewards ...
+ ✓ Compiled /api/rewards in 2.4s (879 modules)
+ ✓ Compiled /api/subscriptions in 306ms (881 modules)
+ ✓ Compiled in 985ms (1683 modules)
+ ✓ Compiled /api/cron in 323ms (884 modules)
+   Reload env: .env.local
+ ✓ Compiled in 619ms (1813 modules)
+ ✓ Compiled /api/subscriptions/order-now in 318ms (881 modules)
+ ✓ Compiled /api/cart in 458ms (881 modules)
+ ○ Compiling /api/orders ...
+ ✓ Compiled /api/orders in 3.4s (989 modules)
+ ✓ Compiled in 1308ms (1786 modules)
+ ✓ Compiled in 693ms (802 modules)
+ ✓ Compiled in 2.4s (1686 modules)
+ ✓ Compiled in 733ms (1660 modules)
+ ✓ Compiled in 796ms (802 modules)
+ ○ Compiling /api/orders ...
+ ✓ Compiled /api/orders in 571ms (988 modules)
+ ✓ Compiled in 1213ms (1660 modules)
+ ✓ Compiled in 489ms (802 modules)
+ ✓ Compiled in 455ms (802 modules)
+ ✓ Compiled in 699ms (802 modules)
+ ✓ Compiled in 467ms (802 modules)
+ ○ Compiling /api/orders ...
+ ✓ Compiled /api/orders in 764ms (988 modules)
+ ✓ Compiled in 1006ms (1790 modules)
+   Reload env: .env.local
+ ✓ Compiled in 1105ms (1790 modules)
+ ✓ Compiled /api/webhooks/razorpay in 463ms (884 modules)
+ ✓ Compiled /api/rewards in 414ms (886 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 1059ms (867 modules)
+ ○ Compiling /api/home ...
+ ✓ Compiled /api/home in 532ms (889 modules)
+ ✓ Compiled (891 modules)
+ ✓ Compiled /api/notifications in 494ms (894 modules)
+ ○ Compiling /account/notifications ...
+ ✓ Compiled /account/notifications in 2.1s (1654 modules)
+ ✓ Compiled /api/mobile/me in 307ms (885 modules)
+ ✓ Compiled /api/notifications in 315ms (888 modules)
+ ○ Compiling /account/settings ...
+ ✓ Compiled /account/settings in 1145ms (1690 modules)
+ ○ Compiling /api/orders ...
+ ✓ Compiled /api/orders in 1886ms (1004 modules)
+ ✓ Compiled /api/cron in 404ms (1007 modules)
+ ○ Compiling /account ...
+ ✓ Compiled /account in 605ms (1014 modules)
+ ○ Compiling /api/pet-listings/mine ...
+ ✓ Compiled /api/pet-listings/mine in 745ms (1016 modules)
+ ✓ Compiled (1020 modules)
+ ○ Compiling /api/categories ...
+ ✓ Compiled /api/categories in 688ms (1010 modules)
+ ✓ Compiled in 1ms (1012 modules)
+ ✓ Compiled in 1ms (1012 modules)
+ ✓ Compiled in 0ms (1012 modules)
+ ○ Compiling /account/subscriptions ...
+ ✓ Compiled /account/subscriptions in 1343ms (1817 modules)
+ ○ Compiling /api/subscriptions ...
+ ✓ Compiled /api/subscriptions in 1063ms (1016 modules)
+ ✓ Compiled in 1ms (1016 modules)
+ ✓ Compiled in 1ms (1016 modules)
+ ✓ Compiled in 0ms (1016 modules)
+ ○ Compiling /account/rewards ...
+ ✓ Compiled /account/rewards in 1709ms (1709 modules)
+ ○ Compiling /api/rewards ...
+ ✓ Compiled /api/rewards in 526ms (903 modules)
+ ✓ Compiled in 1ms (903 modules)
+ ✓ Compiled in 1ms (903 modules)
+ ✓ Compiled in 0ms (903 modules)
+ ○ Compiling /api/auth/send-otp ...
+ ✓ Compiled /api/auth/send-otp in 2.8s (1693 modules)
+[DEV] OTP for +911234567890: 275128
+ ○ Compiling /api/auth/verify-otp ...
+ ✓ Compiled /api/auth/verify-otp in 995ms (1792 modules)
+[DEV] OTP for +911234567890: 774885
+[DEV] OTP for +911234567890: 294139
+ ○ Compiling /admin/analytics ...
+ ✓ Compiled /admin/analytics in 3.7s (2610 modules)
+ ✓ Compiled /api/admin/analytics in 456ms (1798 modules)
+ ○ Compiling /admin/subscriptions ...
+ ✓ Compiled /admin/subscriptions in 1872ms (1692 modules)
+ ✓ Compiled /api/admin/subscriptions in 132ms (877 modules)
+ ○ Compiling /shop/[slug] ...
+ ✓ Compiled /shop/[slug] in 1826ms (904 modules)
+ ✓ Compiled /api/cart in 435ms (904 modules)
+ ✓ Compiled (910 modules)
+ ○ Compiling /api/notifications ...
+ ✓ Compiled /api/notifications in 786ms (913 modules)
+ ✓ Compiled in 1ms (913 modules)
+ ✓ Compiled in 0ms (906 modules)
+ ✓ Compiled in 1ms (906 modules)
+ ✓ Compiled /account/notifications in 449ms (911 modules)
+ ○ Compiling /account ...
+ ✓ Compiled /account in 525ms (905 modules)
+ ✓ Compiled /api/pet-listings/mine in 333ms (907 modules)
+ ✓ Compiled (1019 modules)
+ ○ Compiling /shop ...
+ ✓ Compiled /shop in 774ms (906 modules)
+ ✓ Compiled /api/wishlist in 360ms (908 modules)
+ ✓ Compiled in 1ms (910 modules)
+ ✓ Compiled in 1ms (910 modules)
+ ✓ Compiled in 1ms (910 modules)
+ ○ Compiling /api/auth/send-otp ...
+ ✓ Compiled /api/auth/send-otp in 2.7s (1708 modules)
+[DEV] OTP for +919999999999: 328688
+ ○ Compiling /api/auth/verify-otp ...
+ ✓ Compiled /api/auth/verify-otp in 824ms (1810 modules)
+ ✓ Compiled /api/cart in 402ms (1812 modules)
+[DEV] OTP for +919999999999: 673258
+ ○ Compiling /checkout ...
+ ✓ Compiled /checkout in 1818ms (901 modules)
+ ✓ Compiled /api/mobile/me in 470ms (903 modules)
+ ✓ Compiled (905 modules)
+ ✓ Compiled /api/notifications in 486ms (908 modules)
+ ○ Compiling /api/addresses ...
+ ✓ Compiled /api/addresses in 792ms (910 modules)
+ ✓ Compiled in 1ms (910 modules)
+ ✓ Compiled in 1ms (910 modules)
+ ✓ Compiled in 1ms (910 modules)
+ ✓ Compiled in 1ms (910 modules)
+ ○ Compiling /api/rewards ...
+ ✓ Compiled /api/rewards in 637ms (913 modules)
+ ○ Compiling /api/bookings ...
+ ✓ Compiled /api/bookings in 988ms (888 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 1179ms (873 modules)
+ ✓ Compiled /api/mobile/me in 401ms (896 modules)
+ ✓ Compiled (903 modules)
+ ○ Compiling /api/notifications ...
+ ✓ Compiled /api/notifications in 558ms (870 modules)
+ ✓ Compiled in 1ms (870 modules)
+ ✓ Compiled in 1ms (870 modules)
+ ✓ Compiled in 0ms (870 modules)
+ ✓ Compiled in 1ms (870 modules)

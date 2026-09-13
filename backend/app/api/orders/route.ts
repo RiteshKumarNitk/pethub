@@ -9,6 +9,7 @@ import { createRazorpayOrder } from "@/lib/razorpay";
 import { computeTotals, orderNumber, round2, logAudit } from "@/lib/utils";
 import { getSettings } from "@/lib/settings";
 import { createNotification } from "@/lib/notifications";
+import { getBalance, validateRedemption, recordRedemption, reverseRedemption } from "@/lib/loyalty";
 
 export async function GET(request: NextRequest) {
   try {
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
   try {
     const userId = parseInt(request.headers.get("x-user-id") || "0") || null;
     const body = await request.json();
-    const { addressId, address: inlineAddress, couponCode, notes } = body;
+    const { addressId, address: inlineAddress, couponCode, notes, loyaltyPointsToRedeem } = body;
 
     // 1. Resolve cart (user cart, or guest cart via cart_token cookie)
     let cart: typeof carts.$inferSelect | undefined;
@@ -167,11 +168,24 @@ export async function POST(request: NextRequest) {
     }
 
     const settings = await getSettings();
+
+    // 4b. Loyalty redemption — validated server-side against the live balance
+    let pointsRedeemed = 0;
+    if (userId && loyaltyPointsToRedeem && Number(loyaltyPointsToRedeem) > 0) {
+      const balance = await getBalance(userId);
+      const check = validateRedemption(Number(loyaltyPointsToRedeem), balance, subtotal, settings);
+      if (!check.ok) {
+        return NextResponse.json({ error: check.error }, { status: 400 });
+      }
+      pointsRedeemed = check.value; // 1 point = ₹1
+    }
+
     const totals = computeTotals({
       subtotal,
       discountPercent: coupon?.discountPercent ?? 0,
       discountFlat: parseFloat(coupon?.discountFlat?.toString() || "0"),
       maxDiscount: parseFloat(coupon?.maxDiscount?.toString() || "0") || undefined,
+      extraDiscountFlat: pointsRedeemed,
       shippingFee: settings.shippingFee,
       freeShippingAbove: settings.freeShippingAbove,
       taxPercent: settings.taxPercent,
@@ -191,6 +205,7 @@ export async function POST(request: NextRequest) {
           total: totals.total.toString(),
           couponId: coupon?.id ?? null,
           couponCode: coupon?.code ?? null,
+          loyaltyPointsRedeemed: pointsRedeemed,
           shippingAddress,
           status: "pending",
           paymentStatus: "unpaid",
@@ -214,6 +229,11 @@ export async function POST(request: NextRequest) {
           unitPrice: unitPrice.toString(),
           subtotal: round2(unitPrice * it.qty).toString(),
         });
+      }
+
+      // Ledger the redemption inside the same transaction as the order
+      if (pointsRedeemed > 0) {
+        await recordRedemption(userId!, pointsRedeemed, order.id);
       }
 
       // Clear cart
@@ -296,6 +316,9 @@ export async function DELETE(request: NextRequest) {
       .update(orders)
       .set({ status: "cancelled", updatedAt: new Date() })
       .where(eq(orders.id, orderId));
+
+    // Return redeemed points if the order never got fulfilled
+    await reverseRedemption(orderId);
 
     // Restock if it was paid
     if (existing.paymentStatus === "paid") {

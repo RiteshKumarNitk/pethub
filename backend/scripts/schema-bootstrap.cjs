@@ -61,6 +61,8 @@ const stmts = [
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_fee numeric(10,2) DEFAULT '0' NOT NULL`,
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS tax_amount numeric(10,2) DEFAULT '0' NOT NULL`,
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_code text`,
+  `ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_amount numeric(10,2) DEFAULT '0' NOT NULL`,
+  `ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_id integer`,
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_address jsonb`,
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status text DEFAULT 'unpaid' NOT NULL`,
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method text DEFAULT 'razorpay'`,

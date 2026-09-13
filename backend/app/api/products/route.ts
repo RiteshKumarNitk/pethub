@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { products, categories, brands, reviews } from "@/db/schema";
-import { eq, and, or, ilike, gte, lte, count, desc, asc, sql } from "drizzle-orm";
+import { eq, and, or, ilike, gte, lte, count, desc, asc, sql, inArray } from "drizzle-orm";
 
 /**
  * GET /api/products
@@ -21,6 +21,9 @@ export async function GET(request: NextRequest) {
     const minPrice = searchParams.get("minPrice");
     const maxPrice = searchParams.get("maxPrice");
     const inStock = searchParams.get("inStock");
+    const inStore = searchParams.get("inStore");
+    const need = searchParams.get("need");
+    const lifeStage = searchParams.get("lifeStage");
     const sort = searchParams.get("sort") || "new";
     const featured = searchParams.get("featured");
     const bestSeller = searchParams.get("bestSeller");
@@ -32,15 +35,38 @@ export async function GET(request: NextRequest) {
       if (!isNaN(catId)) {
         filters.push(eq(products.categoryId, catId));
       } else {
-        // Resolve slug
+        // Resolve slug → category; a parent group expands to include its children
         const [cat] = await db
-          .select({ id: categories.id })
+          .select({ id: categories.id, parentId: categories.parentId })
           .from(categories)
           .where(eq(categories.slug, category))
           .limit(1);
-        if (cat) filters.push(eq(products.categoryId, cat.id));
-        else return NextResponse.json({ products: [], total: 0, page, limit, totalPages: 0 });
+        if (!cat) return NextResponse.json({ products: [], total: 0, page, limit, totalPages: 0 });
+        let catIds = [cat.id];
+        if (cat.parentId === null) {
+          const children = await db
+            .select({ id: categories.id })
+            .from(categories)
+            .where(eq(categories.parentId, cat.id));
+          catIds = [cat.id, ...children.map((c) => c.id)];
+        }
+        filters.push(inArray(products.categoryId, catIds));
       }
+    }
+
+    // Shop-by-need facet: product.needSlugs contains the requested need
+    if (need) {
+      filters.push(sql`${products.needSlugs} @> ${JSON.stringify([need])}::jsonb`);
+    }
+
+    // Life stage (puppy/kitten/adult/senior): matches tagged products
+    if (lifeStage && lifeStage !== "all") {
+      filters.push(sql`${products.lifeStages} @> ${JSON.stringify([lifeStage])}::jsonb`);
+    }
+
+    // Physical shop availability (DECISION: separate storeStock pool)
+    if (inStore === "true") {
+      filters.push(sql`${products.storeStock} > 0`);
     }
 
     if (petType && petType !== "all") {
@@ -118,6 +144,7 @@ export async function GET(request: NextRequest) {
         mrp: products.mrp,
         petType: products.petType,
         stock: products.stock,
+        storeStock: products.storeStock,
         imageUrl: products.imageUrl,
         isFeatured: products.isFeatured,
         isBestSeller: products.isBestSeller,

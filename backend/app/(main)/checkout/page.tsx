@@ -47,6 +47,11 @@ export default function CheckoutPage() {
   const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [couponDiscount, setCouponDiscount] = useState(0);
 
+  // Loyalty points (Sprint 3)
+  const [pointsBalance, setPointsBalance] = useState(0);
+  const [usePoints, setUsePoints] = useState(false);
+  const [pointsRules, setPointsRules] = useState<{ maxRedeemPercent: number; minRedeemPoints: number } | null>(null);
+
   const loadCart = useCallback(async () => {
     const res = await fetch("/api/cart");
     const data = await res.json();
@@ -73,6 +78,17 @@ export default function CheckoutPage() {
         const def = list.find((a) => a.isDefault) || list[0];
         if (def) setSelectedAddressId(def.id);
         else if (list.length === 0) setShowAddressForm(true);
+        try {
+          const rwRes = await fetch("/api/rewards");
+          if (rwRes.ok) {
+            const rw = await rwRes.json();
+            setPointsBalance(rw.balance || 0);
+            setPointsRules({
+              maxRedeemPercent: rw.rules?.maxRedeemPercent ?? 50,
+              minRedeemPoints: rw.rules?.minRedeemPoints ?? 50,
+            });
+          }
+        } catch {}
       }
       setLoading(false);
     }).catch(() => setLoading(false));
@@ -151,6 +167,7 @@ export default function CheckoutPage() {
           addressId: user ? selectedAddressId : undefined,
           address: user ? undefined : guestAddress,
           couponCode: appliedCoupon?.code,
+          loyaltyPointsToRedeem: pointsToUse > 0 ? pointsToUse : undefined,
         }),
       });
       const data = await res.json();
@@ -230,7 +247,10 @@ export default function CheckoutPage() {
     );
   }
 
-  const finalTotal = totals ? Math.max(0, totals.total - (appliedCoupon ? couponDiscount : 0)) : 0;
+  const subtotalNum = totals?.subtotal ?? 0;
+  const maxPointsUsable = pointsRules ? Math.floor((subtotalNum * pointsRules.maxRedeemPercent) / 100) : 0;
+  const pointsToUse = user && usePoints ? Math.min(pointsBalance, Math.max(0, maxPointsUsable)) : 0;
+  const finalTotal = totals ? Math.max(0, totals.total - (appliedCoupon ? couponDiscount : 0) - pointsToUse) : 0;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -361,11 +381,42 @@ export default function CheckoutPage() {
               )}
             </div>
 
+            {/* Loyalty points */}
+            {user && pointsBalance > 0 && (
+              <div className="border-t border-gray-100 pt-4">
+                {usePoints && pointsToUse > 0 ? (
+                  <div className="flex items-center justify-between bg-amber-50 rounded-lg px-3 py-2.5">
+                    <span className="text-xs font-bold text-amber-700">🪙 {pointsToUse} points applied — ₹{pointsToUse} off</span>
+                    <button onClick={() => setUsePoints(false)} aria-label="Remove points"><X className="w-3.5 h-3.5 text-amber-600" /></button>
+                  </div>
+                ) : (
+                  (() => {
+                    const usable = Math.min(pointsBalance, Math.max(0, maxPointsUsable));
+                    const belowMin = pointsRules ? usable < pointsRules.minRedeemPoints : false;
+                    return (
+                      <button
+                        onClick={() => setUsePoints(true)}
+                        disabled={belowMin}
+                        className="w-full border border-amber-200 bg-amber-50/50 hover:bg-amber-50 disabled:opacity-60 rounded-lg px-3 py-2.5 text-xs font-bold text-amber-700 transition-colors"
+                      >
+                        {belowMin
+                          ? `Points can't apply — minimum ${pointsRules?.minRedeemPoints} on this order`
+                          : `Redeem ${usable} points — ₹${usable} off (balance: ${pointsBalance})`}
+                      </button>
+                    );
+                  })()
+                )}
+              </div>
+            )}
+
             {/* Totals */}
             <div className="border-t border-gray-100 mt-4 pt-3 space-y-1.5 text-sm">
               <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>₹{totals?.subtotal.toFixed(0)}</span></div>
               {appliedCoupon && couponDiscount > 0 && (
                 <div className="flex justify-between text-teal-600"><span>Coupon discount</span><span>−₹{couponDiscount.toFixed(0)}</span></div>
+              )}
+              {pointsToUse > 0 && (
+                <div className="flex justify-between text-amber-600"><span>Points redemption</span><span>−₹{pointsToUse.toFixed(0)}</span></div>
               )}
               {totals && totals.shipping === 0 ? (
                 <div className="flex justify-between text-teal-600"><span>Shipping</span><span>FREE</span></div>

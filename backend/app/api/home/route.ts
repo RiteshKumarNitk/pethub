@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { products, categories, petListings, listingMedia, services, blogs, banners, faqs, reviews, users } from "@/db/schema";
-import { eq, and, desc, asc, count, sql } from "drizzle-orm";
+import { products, categories, petListings, listingMedia, services, blogs, banners, faqs, reviews, users, needs } from "@/db/schema";
+import { eq, and, desc, asc, count, sql, isNull } from "drizzle-orm";
 import { getSettings } from "@/lib/settings";
 
 export async function GET() {
   try {
     const settings = await getSettings();
 
-    const [featured, bestSellers, cats, newestPets, serviceRows, blogRows, bannerRows, faqRows, testimonialRows] = await Promise.all([
+    const [featured, bestSellers, cats, needRows, newestPets, serviceRows, blogRows, bannerRows, faqRows, testimonialRows] = await Promise.all([
       db
         .select({
           id: products.id, slug: products.slug, name: products.name, price: products.price,
@@ -29,14 +29,21 @@ export async function GET() {
       db
         .select({ id: categories.id, name: categories.name, slug: categories.slug, icon: categories.icon, petType: categories.petType })
         .from(categories)
-        .where(eq(categories.active, true))
+        .where(and(eq(categories.active, true), isNull(categories.parentId)))
         .orderBy(asc(categories.sortOrder))
+        .limit(12),
+      db
+        .select({ id: needs.id, name: needs.name, slug: needs.slug, icon: needs.icon })
+        .from(needs)
+        .where(eq(needs.active, true))
+        .orderBy(asc(needs.sortOrder))
         .limit(12),
       db
         .select({
           id: petListings.id, slug: petListings.slug, name: petListings.name, species: petListings.species,
           breed: petListings.breed, ageText: petListings.ageText, price: petListings.price,
           priceType: petListings.priceType, listingType: petListings.listingType, isVerified: petListings.isVerified, city: petListings.city,
+          intent: petListings.intent,
         })
         .from(petListings)
         .where(eq(petListings.status, "approved"))
@@ -93,6 +100,7 @@ export async function GET() {
       },
       heroBanners: bannerRows,
       categories: cats,
+      needs: needRows,
       featuredProducts: featured,
       bestSellers,
       pets: petsWithMedia,

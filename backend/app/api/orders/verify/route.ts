@@ -4,6 +4,7 @@ import { orders, orderItems, products, productVariants, coupons, payments } from
 import { eq, and, sql } from "drizzle-orm";
 import { verifyPaymentSignature } from "@/lib/razorpay";
 import { logAudit } from "@/lib/utils";
+import { earnForOrder } from "@/lib/loyalty";
 import { createNotification } from "@/lib/notifications";
 
 export async function POST(request: NextRequest) {
@@ -97,7 +98,9 @@ export async function POST(request: NextRequest) {
         link: "/account/orders",
       });
     }
-    await logAudit(userId, "payment.captured", "order", order.id, { razorpay_payment_id });
+    // Award loyalty points for the paid order (idempotent, non-fatal)
+    const pointsEarned = await earnForOrder(order.id);
+    await logAudit(userId, "payment.captured", "order", order.id, { razorpay_payment_id, pointsEarned });
 
     return NextResponse.json({ success: true, order });
   } catch (error) {

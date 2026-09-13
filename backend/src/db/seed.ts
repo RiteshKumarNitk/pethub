@@ -1,9 +1,10 @@
 import "dotenv/config";
 import { db } from "./index";
 import {
-  users, products, categories, brands, blogCategories, blogs,
+  users, products, categories, brands, blogCategories, blogs, needs,
   services, petListings, listingMedia, banners, faqs,
 } from "./schema";
+import { eq, inArray } from "drizzle-orm";
 
 function slugify(input: string): string {
   return input.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/[\s_]+/g, "-").replace(/-+/g, "-").slice(0, 70);
@@ -26,25 +27,172 @@ async function main() {
     .onConflictDoUpdate({ target: users.phone, set: { name: "Amit Sharma" } })
     .returning();
 
-  // 2. Categories
-  console.log("🗂️ Seeding categories...");
-  const categoryData = [
-    { name: "Dog Food", petType: "dog", sortOrder: 1 },
-    { name: "Cat Food", petType: "cat", sortOrder: 2 },
-    { name: "Treats", petType: "all", sortOrder: 3 },
-    { name: "Toys", petType: "all", sortOrder: 4 },
-    { name: "Grooming", petType: "all", sortOrder: 5 },
-    { name: "Health & Hygiene", petType: "all", sortOrder: 6 },
-    { name: "Beds & Furniture", petType: "all", sortOrder: 7 },
-    { name: "Collars & Leashes", petType: "dog", sortOrder: 8 },
-    { name: "Litter", petType: "cat", sortOrder: 9 },
-    { name: "Accessories", petType: "all", sortOrder: 10 },
+  // 2. Product taxonomy — PET TYPE → NEED → CATEGORY → SUBCATEGORY
+  // Tree structure: groups (parentId=null) → leaf categories. See PRODUCT_AUDIT_V2.md §6.
+  console.log("🗂️ Seeding taxonomy (categories + needs)...");
+
+  const TREE: { name: string; slug: string; petType: string; children?: { name: string; slug: string }[] }[] = [
+    // ---- DOGS ----
+    { name: "Food & Nutrition", slug: "dog-food-nutrition", petType: "dog", children: [
+      { name: "Dry Food", slug: "dog-dry-food" }, { name: "Wet Food", slug: "dog-wet-food" },
+      { name: "Puppy Food", slug: "dog-puppy-food" }, { name: "Adult Food", slug: "dog-adult-food" },
+      { name: "Senior Food", slug: "dog-senior-food" }, { name: "Special Diets", slug: "dog-special-diets" },
+      { name: "Veterinary Diets", slug: "dog-veterinary-diets" },
+    ]},
+    { name: "Treats & Rewards", slug: "dog-treats", petType: "dog", children: [
+      { name: "Biscuits", slug: "dog-biscuits" }, { name: "Training Treats", slug: "dog-training-treats" },
+      { name: "Dental Treats", slug: "dog-dental-treats" }, { name: "Meaty Treats", slug: "dog-meaty-treats" },
+      { name: "Puppy Treats", slug: "dog-puppy-treats" },
+    ]},
+    { name: "Toys & Play", slug: "dog-toys", petType: "dog", children: [
+      { name: "Chew Toys", slug: "dog-chew-toys" }, { name: "Interactive Toys", slug: "dog-interactive-toys" },
+      { name: "Fetch Toys", slug: "dog-fetch-toys" }, { name: "Rope & Tug", slug: "dog-rope-tug" },
+      { name: "Plush Toys", slug: "dog-plush-toys" },
+    ]},
+    { name: "Grooming & Hygiene", slug: "dog-grooming", petType: "dog", children: [
+      { name: "Shampoo", slug: "dog-shampoo" }, { name: "Conditioner", slug: "dog-conditioner" },
+      { name: "Grooming Tools", slug: "dog-grooming-tools" }, { name: "Brushes & Combs", slug: "dog-brushes-combs" },
+      { name: "Wipes", slug: "dog-wipes" }, { name: "Paw Care", slug: "dog-paw-care" },
+    ]},
+    { name: "Health & Wellness", slug: "dog-health-wellness", petType: "dog", children: [
+      { name: "Supplements", slug: "dog-supplements" }, { name: "Vitamins", slug: "dog-vitamins" },
+      { name: "Wellness", slug: "dog-wellness" },
+    ]},
+    { name: "Tick & Flea Care", slug: "dog-tick-flea", petType: "dog", children: [
+      { name: "Tick Care", slug: "dog-tick-care" }, { name: "Flea Care", slug: "dog-flea-care" },
+      { name: "Preventive Care", slug: "dog-preventive-care" },
+    ]},
+    { name: "Dental Care", slug: "dog-dental-care", petType: "dog", children: [
+      { name: "Toothbrushes", slug: "dog-toothbrushes" }, { name: "Toothpaste", slug: "dog-toothpaste" },
+      { name: "Dental Chews", slug: "dog-dental-chews" },
+    ]},
+    { name: "Walking & Outdoor", slug: "dog-walking-outdoor", petType: "dog", children: [
+      { name: "Collars", slug: "dog-collars" }, { name: "Harnesses", slug: "dog-harnesses" },
+      { name: "Leashes", slug: "dog-leashes" }, { name: "Name Tags", slug: "dog-name-tags" },
+    ]},
+    { name: "Beds & Comfort", slug: "dog-beds-comfort", petType: "dog", children: [
+      { name: "Beds", slug: "dog-beds" }, { name: "Mats", slug: "dog-mats" }, { name: "Blankets", slug: "dog-blankets" },
+    ]},
+    { name: "Bowls & Feeding", slug: "dog-bowls-feeding", petType: "dog", children: [
+      { name: "Bowls", slug: "dog-bowls" }, { name: "Feeders", slug: "dog-feeders" }, { name: "Water Dispensers", slug: "dog-water-dispensers" },
+    ]},
+    { name: "Travel", slug: "dog-travel", petType: "dog", children: [
+      { name: "Carriers", slug: "dog-carriers" }, { name: "Travel Bowls", slug: "dog-travel-bowls" }, { name: "Car Safety", slug: "dog-car-safety" },
+    ]},
+    { name: "Clothing & Accessories", slug: "dog-clothing-accessories", petType: "dog", children: [
+      { name: "Clothing", slug: "dog-clothing" }, { name: "Bandanas", slug: "dog-bandanas" }, { name: "Accessories", slug: "dog-accessories" },
+    ]},
+    // ---- CATS ----
+    { name: "Food", slug: "cat-food", petType: "cat", children: [
+      { name: "Dry Food", slug: "cat-dry-food" }, { name: "Wet Food", slug: "cat-wet-food" },
+      { name: "Kitten Food", slug: "cat-kitten-food" }, { name: "Adult Food", slug: "cat-adult-food" }, { name: "Senior Food", slug: "cat-senior-food" },
+    ]},
+    { name: "Treats", slug: "cat-treats", petType: "cat", children: [
+      { name: "Crunchy Treats", slug: "cat-crunchy-treats" }, { name: "Creamy Treats", slug: "cat-creamy-treats" }, { name: "Dental Treats", slug: "cat-dental-treats" },
+    ]},
+    { name: "Toys", slug: "cat-toys", petType: "cat", children: [
+      { name: "Wand Toys", slug: "cat-wand-toys" }, { name: "Catnip Toys", slug: "cat-catnip-toys" },
+      { name: "Balls & Mice", slug: "cat-balls-mice" }, { name: "Interactive Toys", slug: "cat-interactive-toys" },
+    ]},
+    { name: "Litter & Hygiene", slug: "cat-litter-hygiene", petType: "cat", children: [
+      { name: "Litter", slug: "cat-litter" }, { name: "Litter Trays", slug: "cat-litter-trays" },
+      { name: "Litter Mats", slug: "cat-litter-mats" }, { name: "Deodorizers", slug: "cat-deodorizers" },
+    ]},
+    { name: "Scratchers & Trees", slug: "cat-scratchers-trees", petType: "cat", children: [
+      { name: "Scratchers", slug: "cat-scratchers" }, { name: "Cat Trees", slug: "cat-trees" },
+    ]},
+    { name: "Grooming", slug: "cat-grooming", petType: "cat", children: [
+      { name: "Brushes & Combs", slug: "cat-brushes-combs" }, { name: "Shampoo", slug: "cat-shampoo" }, { name: "Wipes", slug: "cat-wipes" },
+    ]},
+    { name: "Health & Wellness", slug: "cat-health-wellness", petType: "cat", children: [
+      { name: "Supplements", slug: "cat-supplements" }, { name: "Tick & Flea", slug: "cat-tick-flea" },
+    ]},
+    { name: "Dental Care", slug: "cat-dental-care", petType: "cat", children: [
+      { name: "Dental Chews", slug: "cat-dental-chews" }, { name: "Toothpaste", slug: "cat-toothpaste" },
+    ]},
+    { name: "Bowls & Feeding", slug: "cat-bowls-feeding", petType: "cat", children: [
+      { name: "Bowls", slug: "cat-bowls" }, { name: "Water Fountains", slug: "cat-water-fountains" },
+    ]},
+    { name: "Carriers & Travel", slug: "cat-carriers-travel", petType: "cat", children: [
+      { name: "Carriers", slug: "cat-carriers" },
+    ]},
+    { name: "Beds & Comfort", slug: "cat-beds-comfort", petType: "cat", children: [
+      { name: "Beds", slug: "cat-beds" }, { name: "Blankets", slug: "cat-blankets" },
+    ]},
+    { name: "Collars & Accessories", slug: "cat-collars-accessories", petType: "cat", children: [
+      { name: "Collars", slug: "cat-collars" }, { name: "Accessories", slug: "cat-accessories" },
+    ]},
+    // ---- SMALL PETS ----
+    { name: "Food & Hay", slug: "small-food-hay", petType: "small_pet", children: [
+      { name: "Food", slug: "small-food" }, { name: "Hay & Grass", slug: "small-hay-grass" },
+    ]},
+    { name: "Treats & Chews", slug: "small-treats-chews", petType: "small_pet", children: [
+      { name: "Treats", slug: "small-treats" }, { name: "Chews", slug: "small-chews" },
+    ]},
+    { name: "Housing", slug: "small-housing", petType: "small_pet", children: [
+      { name: "Cages & Hutches", slug: "small-cages-hutches" }, { name: "Bedding", slug: "small-bedding" },
+    ]},
+    { name: "Toys & Accessories", slug: "small-toys-accessories", petType: "small_pet", children: [
+      { name: "Exercise Wheels", slug: "small-exercise-wheels" }, { name: "Toys", slug: "small-toys" }, { name: "Accessories", slug: "small-accessories" },
+    ]},
+    { name: "Care", slug: "small-care", petType: "small_pet", children: [
+      { name: "Grooming", slug: "small-grooming" }, { name: "Health", slug: "small-health" },
+    ]},
   ];
-  for (const c of categoryData) {
-    await db.insert(categories).values({ ...c, slug: slugify(c.name) }).onConflictDoNothing();
+
+  // Deactivate legacy flat categories (replaced by the tree)
+  await db.update(categories).set({ active: false }).where(inArray(categories.slug, [
+    "dog-food", "cat-food", "treats", "toys", "grooming", "health-hygiene",
+    "beds-furniture", "collars-leashes", "litter", "accessories",
+  ]));
+
+  const catBySlug = new Map<string, { id: number }>();
+  let groupOrder = 0;
+  for (const group of TREE) {
+    const [parent] = await db
+      .insert(categories)
+      .values({ name: group.name, slug: group.slug, petType: group.petType, sortOrder: ++groupOrder, active: true })
+      .onConflictDoUpdate({
+        target: categories.slug,
+        set: { name: group.name, petType: group.petType, sortOrder: groupOrder, active: true, parentId: null },
+      })
+      .returning();
+    catBySlug.set(group.slug, parent);
+    let leafOrder = 0;
+    for (const leaf of group.children ?? []) {
+      const [child] = await db
+        .insert(categories)
+        .values({ name: leaf.name, slug: leaf.slug, petType: group.petType, parentId: parent.id, sortOrder: ++leafOrder, active: true })
+        .onConflictDoUpdate({
+          target: categories.slug,
+          set: { name: leaf.name, petType: group.petType, parentId: parent.id, sortOrder: leafOrder, active: true },
+        })
+        .returning();
+      catBySlug.set(leaf.slug, child);
+    }
   }
-  const cats = await db.select().from(categories);
-  const catByName = Object.fromEntries(cats.map((c) => [c.name, c]));
+  console.log(`   ${catBySlug.size} taxonomy nodes`);
+
+  // Shop-by-Need facets (cross-pet, problem-first navigation)
+  const NEEDS = [
+    { name: "New Pet Essentials", slug: "new-pet-essentials" },
+    { name: "Food & Nutrition", slug: "food-nutrition" },
+    { name: "Grooming", slug: "grooming" },
+    { name: "Health & Wellness", slug: "health-wellness" },
+    { name: "Tick & Flea", slug: "tick-flea" },
+    { name: "Dental Care", slug: "dental-care" },
+    { name: "Walking & Outdoor", slug: "walking-outdoor" },
+    { name: "Travel", slug: "travel" },
+    { name: "Beds & Comfort", slug: "beds-comfort" },
+    { name: "Toys & Play", slug: "toys-play" },
+    { name: "Bowls & Feeding", slug: "feeding" },
+    { name: "Treats & Training", slug: "training-treats" },
+    { name: "Litter & Hygiene", slug: "litter-hygiene" },
+  ];
+  for (let i = 0; i < NEEDS.length; i++) {
+    const n = NEEDS[i];
+    await db.insert(needs).values({ ...n, sortOrder: i + 1 }).onConflictDoUpdate({ target: needs.slug, set: { name: n.name, sortOrder: i + 1, active: true } });
+  }
 
   // 3. Brands
   console.log("🏷️ Seeding brands...");
@@ -55,50 +203,89 @@ async function main() {
   const brandRows = await db.select().from(brands);
   const brandByName = Object.fromEntries(brandRows.map((b) => [b.name, b]));
 
-  // 4. Products (upgrade existing seed products with slug/category/brand/mrp)
+  // 4. Products — UPDATE canonical slugs into the new tree, INSERT new coverage.
+  // storeStock = physical shelf inventory (DECISION: separate from online stock).
   console.log("🛒 Seeding products...");
-  const productData = [
-    { name: "Royal Canin Maxi Puppy Kibble (4kg)", price: "1599.00", mrp: "1999.00", brand: "Royal Canin", cat: "Dog Food", petType: "dog", stock: 50, featured: true, bestSeller: true, imageUrl: "/images/food.png", description: "Premium dry dog food tailored for large breed puppies (adult weight 26-44kg) up to 15 months. Supports digestive health and natural defences." },
-    { name: "Whiskas Wet Cat Food (Salmon in Gravy) - 12 Pack", price: "480.00", mrp: "599.00", brand: "Whiskas", cat: "Cat Food", petType: "cat", stock: 120, featured: true, bestSeller: true, imageUrl: "/images/food.png", description: "Delicious wet cat food chunks in gravy for adult cats. Balanced nutrition with zinc and omega-6 for healthy skin and coat." },
-    { name: "Premium Retractable Dog Leash (5m)", price: "899.00", mrp: "1199.00", brand: "Trixie", cat: "Collars & Leashes", petType: "dog", stock: 35, featured: true, bestSeller: false, imageUrl: "/images/hero.png", description: "Heavy-duty retractable leash with anti-slip grip and one-handed brake system. Suitable for dogs up to 25kg." },
-    { name: "Orthopedic Memory Foam Pet Bed (Large)", price: "3499.00", mrp: "4499.00", brand: "Trixie", cat: "Beds & Furniture", petType: "all", stock: 15, featured: true, bestSeller: true, imageUrl: "/images/hero.png", description: "Joint-relief memory foam bed with removable, machine-washable ultra-soft cover. Ideal for aging or active pets." },
-    { name: "Organic Aloe Vera Dog Shampoo (500ml)", price: "450.00", mrp: "599.00", brand: "Drools", cat: "Grooming", petType: "dog", stock: 80, featured: true, bestSeller: true, imageUrl: "/images/grooming.png", description: "Soap-free, hypoallergenic oatmeal and aloe vera shampoo. Soothes dry, itchy skin and leaves your pup smelling fresh." },
-    { name: "Self-Cleaning Deshedding Grooming Brush", price: "599.00", mrp: "799.00", brand: "Trixie", cat: "Grooming", petType: "all", stock: 60, featured: false, bestSeller: true, imageUrl: "/images/grooming.png", description: "One-click self-cleaning slicker brush for dogs and cats. Gently removes loose undercoat, mats, and tangled hair." },
-    { name: "Interactive Wobble Treat Dispensing Dog Toy", price: "699.00", mrp: "899.00", brand: "KONG", cat: "Toys", petType: "dog", stock: 45, featured: true, bestSeller: true, imageUrl: "/images/adoption.png", description: "Durable, non-toxic rubber treat dispenser. Keeps dogs mentally stimulated and physically active." },
-    { name: "Cat Feather Teaser Wand & Crinkle Balls Set", price: "349.00", mrp: "449.00", brand: "Trixie", cat: "Toys", petType: "cat", stock: 100, featured: false, bestSeller: true, imageUrl: "/images/adoption.png", description: "Flexible wand with feathers, bells, and 5 colorful crinkle balls to keep kittens engaged." },
-    { name: "BarkOut Multivitamin Tablets for Dogs (60 Tabs)", price: "799.00", mrp: "999.00", brand: "Drools", cat: "Health & Hygiene", petType: "dog", stock: 75, featured: false, bestSeller: true, imageUrl: "/images/grooming.png", description: "Vet-approved daily multivitamin supplements with essential minerals, calcium, and amino acids for immunity, bone, and joint health." },
-    { name: "Spot-On Tick & Flea Prevention for Small Dogs", price: "420.00", mrp: "520.00", brand: "Drools", cat: "Health & Hygiene", petType: "dog", stock: 90, featured: false, bestSeller: true, imageUrl: "/images/grooming.png", description: "Fast-acting, long-lasting tick and flea treatment. One application protects for up to 30 days." },
-    { name: "Durable Nylon Chew Toy Bone for Aggressive Chewers", price: "549.00", mrp: "699.00", brand: "KONG", cat: "Toys", petType: "dog", stock: 65, featured: false, bestSeller: true, imageUrl: "/images/adoption.png", description: "Heavy-duty nylon bone for dogs who love to chew. Helps clean teeth and keeps your pup engaged for hours." },
-    { name: "Stainless Steel Double Diner Pet Bowls (2 Pack)", price: "699.00", mrp: "899.00", brand: "Trixie", cat: "Accessories", petType: "all", stock: 80, featured: false, bestSeller: true, imageUrl: "/images/hero.png", description: "Anti-skid stainless steel bowls with rubber base. Perfect for food and water. Dishwasher safe." },
-    { name: "Pet Wipes - Gentle Cleaning (100 Wipes Pack)", price: "299.00", mrp: "399.00", brand: "Drools", cat: "Grooming", petType: "all", stock: 200, featured: false, bestSeller: true, imageUrl: "/images/grooming.png", description: "Aloe vera and vitamin E enriched wipes for gentle cleaning of paws, face, and body. Safe for daily use." },
-    { name: "Joint Care Chews for Senior Dogs (90 Chews)", price: "999.00", mrp: "1299.00", brand: "Hills", cat: "Health & Hygiene", petType: "dog", stock: 40, featured: false, bestSeller: true, imageUrl: "/images/grooming.png", description: "Advanced glucosamine and chondroitin formula supporting hip and joint health in senior dogs. Chicken-flavored soft chews." },
-    { name: "Clumping Cat Litter - Lavender Scent (10kg)", price: "749.00", mrp: "899.00", brand: "Drools", cat: "Litter", petType: "cat", stock: 55, featured: true, bestSeller: true, imageUrl: "/images/food.png", description: "Superior clumping cat litter with odor control. Low dust, long lasting, easy to scoop." },
-    { name: "Chicken Liver Training Treats for Dogs (200g)", price: "249.00", mrp: "329.00", brand: "Drools", cat: "Treats", petType: "dog", stock: 150, featured: true, bestSeller: true, imageUrl: "/images/food.png", description: "High-value soft training treats made with real chicken liver. No artificial colors or preservatives." },
+
+  type P = {
+    name: string; price: string; mrp: string; brand: string; cat: string; petType: string;
+    stock: number; storeStock: number; lifeStages: string[]; needSlugs: string[];
+    featured: boolean; bestSeller: boolean; imageUrl: string; description: string;
+  };
+
+  const productData: P[] = [
+    { name: "Royal Canin Maxi Puppy Kibble (4kg)", price: "1599.00", mrp: "1999.00", brand: "Royal Canin", cat: "dog-puppy-food", petType: "dog", stock: 50, storeStock: 8, lifeStages: ["puppy"], needSlugs: ["food-nutrition", "new-pet-essentials"], featured: true, bestSeller: true, imageUrl: "/images/food.png", description: "Premium dry dog food tailored for large breed puppies (adult weight 26-44kg) up to 15 months. Supports digestive health and natural defences." },
+    { name: "Whiskas Wet Cat Food (Salmon in Gravy) - 12 Pack", price: "480.00", mrp: "599.00", brand: "Whiskas", cat: "cat-wet-food", petType: "cat", stock: 120, storeStock: 12, lifeStages: ["adult"], needSlugs: ["food-nutrition"], featured: true, bestSeller: true, imageUrl: "/images/food.png", description: "Delicious wet cat food chunks in gravy for adult cats. Balanced nutrition with zinc and omega-6 for healthy skin and coat." },
+    { name: "Premium Retractable Dog Leash (5m)", price: "899.00", mrp: "1199.00", brand: "Trixie", cat: "dog-leashes", petType: "dog", stock: 35, storeStock: 6, lifeStages: [], needSlugs: ["walking-outdoor"], featured: true, bestSeller: false, imageUrl: "/images/hero.png", description: "Heavy-duty retractable leash with anti-slip grip and one-handed brake system. Suitable for dogs up to 25kg." },
+    { name: "Orthopedic Memory Foam Pet Bed (Large)", price: "3499.00", mrp: "4499.00", brand: "Trixie", cat: "dog-beds", petType: "all", stock: 15, storeStock: 2, lifeStages: ["adult", "senior"], needSlugs: ["beds-comfort"], featured: true, bestSeller: true, imageUrl: "/images/hero.png", description: "Joint-relief memory foam bed with removable, machine-washable ultra-soft cover. Ideal for aging or active pets." },
+    { name: "Organic Aloe Vera Dog Shampoo (500ml)", price: "450.00", mrp: "599.00", brand: "Drools", cat: "dog-shampoo", petType: "dog", stock: 80, storeStock: 10, lifeStages: [], needSlugs: ["grooming"], featured: true, bestSeller: true, imageUrl: "/images/grooming.png", description: "Soap-free, hypoallergenic oatmeal and aloe vera shampoo. Soothes dry, itchy skin and leaves your pup smelling fresh." },
+    { name: "Self-Cleaning Deshedding Grooming Brush", price: "599.00", mrp: "799.00", brand: "Trixie", cat: "dog-brushes-combs", petType: "all", stock: 60, storeStock: 8, lifeStages: [], needSlugs: ["grooming"], featured: false, bestSeller: true, imageUrl: "/images/grooming.png", description: "One-click self-cleaning slicker brush for dogs and cats. Gently removes loose undercoat, mats, and tangled hair." },
+    { name: "Interactive Wobble Treat Dispensing Dog Toy", price: "699.00", mrp: "899.00", brand: "KONG", cat: "dog-interactive-toys", petType: "dog", stock: 45, storeStock: 5, lifeStages: [], needSlugs: ["toys-play"], featured: true, bestSeller: true, imageUrl: "/images/adoption.png", description: "Durable, non-toxic rubber treat dispenser. Keeps dogs mentally stimulated and physically active." },
+    { name: "Cat Feather Teaser Wand & Crinkle Balls Set", price: "349.00", mrp: "449.00", brand: "Trixie", cat: "cat-wand-toys", petType: "cat", stock: 100, storeStock: 10, lifeStages: [], needSlugs: ["toys-play"], featured: false, bestSeller: true, imageUrl: "/images/adoption.png", description: "Flexible wand with feathers, bells, and 5 colorful crinkle balls to keep kittens engaged." },
+    { name: "BarkOut Multivitamin Tablets for Dogs (60 Tabs)", price: "799.00", mrp: "999.00", brand: "Drools", cat: "dog-vitamins", petType: "dog", stock: 75, storeStock: 6, lifeStages: [], needSlugs: ["health-wellness"], featured: false, bestSeller: true, imageUrl: "/images/grooming.png", description: "Vet-approved daily multivitamin supplements with essential minerals, calcium, and amino acids for immunity, bone, and joint health." },
+    { name: "Spot-On Tick & Flea Prevention for Small Dogs", price: "420.00", mrp: "520.00", brand: "Drools", cat: "dog-preventive-care", petType: "dog", stock: 90, storeStock: 9, lifeStages: [], needSlugs: ["tick-flea", "health-wellness"], featured: false, bestSeller: true, imageUrl: "/images/grooming.png", description: "Fast-acting, long-lasting tick and flea treatment. One application protects for up to 30 days." },
+    { name: "Durable Nylon Chew Toy Bone for Aggressive Chewers", price: "549.00", mrp: "699.00", brand: "KONG", cat: "dog-chew-toys", petType: "dog", stock: 65, storeStock: 4, lifeStages: [], needSlugs: ["toys-play"], featured: false, bestSeller: true, imageUrl: "/images/adoption.png", description: "Heavy-duty nylon bone for dogs who love to chew. Helps clean teeth and keeps your pup engaged for hours." },
+    { name: "Stainless Steel Double Diner Pet Bowls (2 Pack)", price: "699.00", mrp: "899.00", brand: "Trixie", cat: "dog-bowls", petType: "all", stock: 80, storeStock: 10, lifeStages: [], needSlugs: ["feeding"], featured: false, bestSeller: true, imageUrl: "/images/hero.png", description: "Anti-skid stainless steel bowls with rubber base. Perfect for food and water. Dishwasher safe." },
+    { name: "Pet Wipes - Gentle Cleaning (100 Wipes Pack)", price: "299.00", mrp: "399.00", brand: "Drools", cat: "dog-wipes", petType: "all", stock: 200, storeStock: 15, lifeStages: [], needSlugs: ["grooming"], featured: false, bestSeller: true, imageUrl: "/images/grooming.png", description: "Aloe vera and vitamin E enriched wipes for gentle cleaning of paws, face, and body. Safe for daily use." },
+    { name: "Joint Care Chews for Senior Dogs (90 Chews)", price: "999.00", mrp: "1299.00", brand: "Hills", cat: "dog-supplements", petType: "dog", stock: 40, storeStock: 5, lifeStages: ["senior"], needSlugs: ["health-wellness"], featured: false, bestSeller: true, imageUrl: "/images/grooming.png", description: "Advanced glucosamine and chondroitin formula supporting hip and joint health in senior dogs. Chicken-flavored soft chews." },
+    { name: "Clumping Cat Litter - Lavender Scent (10kg)", price: "749.00", mrp: "899.00", brand: "Drools", cat: "cat-litter", petType: "cat", stock: 55, storeStock: 8, lifeStages: [], needSlugs: ["litter-hygiene"], featured: true, bestSeller: true, imageUrl: "/images/food.png", description: "Superior clumping cat litter with odor control. Low dust, long lasting, easy to scoop." },
+    { name: "Chicken Liver Training Treats for Dogs (200g)", price: "249.00", mrp: "329.00", brand: "Drools", cat: "dog-training-treats", petType: "dog", stock: 150, storeStock: 12, lifeStages: [], needSlugs: ["training-treats"], featured: true, bestSeller: true, imageUrl: "/images/food.png", description: "High-value soft training treats made with real chicken liver. No artificial colors or preservatives." },
+    // ---- New coverage: gaps the taxonomy exposed ----
+    { name: "Adult Dry Dog Food - Chicken & Rice (3kg)", price: "749.00", mrp: "949.00", brand: "Drools", cat: "dog-adult-food", petType: "dog", stock: 60, storeStock: 7, lifeStages: ["adult"], needSlugs: ["food-nutrition"], featured: false, bestSeller: true, imageUrl: "/images/food.png", description: "Complete and balanced dry food for adult dogs, with real chicken as the first ingredient. Supports muscle maintenance and healthy digestion." },
+    { name: "Grain-Free Puppy Starter Dry Food (1.5kg)", price: "1150.00", mrp: "1399.00", brand: "Farmina", cat: "dog-puppy-food", petType: "dog", stock: 30, storeStock: 4, lifeStages: ["puppy"], needSlugs: ["food-nutrition", "new-pet-essentials"], featured: false, bestSeller: false, imageUrl: "/images/food.png", description: "Grain-free, high-protein starter kibble for puppies of all breeds. Small pellets for easy weaning and digestion." },
+    { name: "Dental Sticks Daily Oral Care for Dogs (28 Pack)", price: "399.00", mrp: "499.00", brand: "Pedigree", cat: "dog-dental-chews", petType: "dog", stock: 85, storeStock: 10, lifeStages: ["adult"], needSlugs: ["dental-care"], featured: false, bestSeller: true, imageUrl: "/images/food.png", description: "Daily dental sticks with a textured chew design that reduces plaque and tartar build-up while freshening breath." },
+    { name: "Rope Tug Toy for Dogs (Large)", price: "299.00", mrp: "399.00", brand: "KONG", cat: "dog-rope-tug", petType: "dog", stock: 70, storeStock: 9, lifeStages: [], needSlugs: ["toys-play"], featured: false, bestSeller: false, imageUrl: "/images/adoption.png", description: "Sturdy cotton rope tug with knotted ends — perfect for interactive play and gentle teeth cleaning." },
+    { name: "Plush Squeaky Companion Toy for Puppies", price: "349.00", mrp: "449.00", brand: "Trixie", cat: "dog-plush-toys", petType: "dog", stock: 55, storeStock: 6, lifeStages: ["puppy"], needSlugs: ["toys-play", "new-pet-essentials"], featured: false, bestSeller: false, imageUrl: "/images/adoption.png", description: "Soft plush toy with built-in squeaker and crinkle paper. Comforts puppies and satisfies natural foraging instincts." },
+    { name: "Dog Dental Kit - Toothbrush & Enzymatic Toothpaste", price: "499.00", mrp: "649.00", brand: "Trixie", cat: "dog-toothpaste", petType: "dog", stock: 40, storeStock: 5, lifeStages: [], needSlugs: ["dental-care"], featured: false, bestSeller: false, imageUrl: "/images/grooming.png", description: "Complete dental care kit with dual-head toothbrush and poultry-flavored enzymatic toothpaste. No rinsing needed." },
+    { name: "Padded Adjustable Dog Harness (Medium)", price: "899.00", mrp: "1099.00", brand: "Trixie", cat: "dog-harnesses", petType: "dog", stock: 45, storeStock: 7, lifeStages: [], needSlugs: ["walking-outdoor"], featured: false, bestSeller: true, imageUrl: "/images/hero.png", description: "Soft-padded, step-in harness with reflective stitching and four adjustment points for a secure, comfortable fit." },
+    { name: "Personalized Bone ID Name Tag", price: "249.00", mrp: "349.00", brand: "Trixie", cat: "dog-name-tags", petType: "all", stock: 100, storeStock: 0, lifeStages: [], needSlugs: ["walking-outdoor", "new-pet-essentials"], featured: false, bestSeller: false, imageUrl: "/images/hero.png", description: "Engraved bone-shaped ID tag in stainless steel. Enter your pet's name and your phone number at checkout notes — engraving done at our shop." },
+    { name: "Washable Pet Blanket (Medium)", price: "549.00", mrp: "699.00", brand: "Trixie", cat: "dog-blankets", petType: "all", stock: 50, storeStock: 8, lifeStages: [], needSlugs: ["beds-comfort"], featured: false, bestSeller: false, imageUrl: "/images/hero.png", description: "Ultra-soft, machine-washable fleece blanket for crates, beds, sofas, and car seats. Protects furniture from fur and dirt." },
+    { name: "Slow-Feeder Bowl (Anti-Gulping)", price: "649.00", mrp: "849.00", brand: "Trixie", cat: "dog-feeders", petType: "dog", stock: 38, storeStock: 5, lifeStages: [], needSlugs: ["feeding"], featured: false, bestSeller: true, imageUrl: "/images/hero.png", description: "Maze-pattern bowl that slows fast eaters by up to 5x, reducing bloat, choking, and post-meal vomiting." },
+    { name: "Foldable Travel Carrier (Airline-Approved)", price: "1899.00", mrp: "2399.00", brand: "Trixie", cat: "cat-carriers", petType: "all", stock: 25, storeStock: 3, lifeStages: [], needSlugs: ["travel"], featured: false, bestSeller: false, imageUrl: "/images/hero.png", description: "Soft-sided folding carrier with mesh ventilation, safety tether, and machine-washable base. Approved for most airlines." },
+    { name: "Catnip Crunchy Treats (60g)", price: "149.00", mrp: "199.00", brand: "Whiskas", cat: "cat-crunchy-treats", petType: "cat", stock: 140, storeStock: 14, lifeStages: [], needSlugs: ["training-treats"], featured: false, bestSeller: true, imageUrl: "/images/food.png", description: "Irresistible crunchy treats with real catnip — perfect for training, bonding, and treating between meals." },
+    { name: "Sisal Scratching Post (Tall, 60cm)", price: "1299.00", mrp: "1599.00", brand: "Trixie", cat: "cat-scratchers", petType: "cat", stock: 20, storeStock: 4, lifeStages: [], needSlugs: ["toys-play"], featured: false, bestSeller: true, imageUrl: "/images/adoption.png", description: "Natural sisal rope post on a sturdy carpet base. Saves your furniture by giving cats a dedicated scratching spot." },
+    { name: "Cat Litter Trapping Mat (Large)", price: "499.00", mrp: "649.00", brand: "Trixie", cat: "cat-litter-mats", petType: "cat", stock: 48, storeStock: 6, lifeStages: [], needSlugs: ["litter-hygiene"], featured: false, bestSeller: false, imageUrl: "/images/hero.png", description: "Honeycomb-textured mat that catches scattered litter from paws. Waterproof base, easy to empty and clean." },
+    { name: "Cat Water Fountain (2L, Ultra-Quiet)", price: "1799.00", mrp: "2199.00", brand: "Trixie", cat: "cat-water-fountains", petType: "cat", stock: 22, storeStock: 3, lifeStages: [], needSlugs: ["feeding"], featured: false, bestSeller: true, imageUrl: "/images/hero.png", description: "Circulating water fountain with triple filtration. Encourages cats to drink more, supporting urinary tract health." },
+    { name: "Premium Timothy Hay for Small Pets (1kg)", price: "399.00", mrp: "499.00", brand: "Trixie", cat: "small-hay-grass", petType: "small_pet", stock: 90, storeStock: 12, lifeStages: [], needSlugs: ["food-nutrition"], featured: false, bestSeller: true, imageUrl: "/images/food.png", description: "Sun-dried, long-strand timothy hay — the daily dietary essential for rabbits, guinea pigs and chinchillas." },
+    { name: "Silent Exercise Wheel for Hamsters (20cm)", price: "549.00", mrp: "699.00", brand: "Trixie", cat: "small-exercise-wheels", petType: "small_pet", stock: 60, storeStock: 8, lifeStages: [], needSlugs: ["toys-play"], featured: false, bestSeller: false, imageUrl: "/images/adoption.png", description: "Whisper-quiet spin wheel with a solid running surface — safe for tiny paws and peaceful for night-time activity." },
+    { name: "Soft Cotton Bedding for Small Pets (5L)", price: "299.00", mrp: "379.00", brand: "Trixie", cat: "small-bedding", petType: "small_pet", stock: 75, storeStock: 10, lifeStages: [], needSlugs: ["beds-comfort"], featured: false, bestSeller: false, imageUrl: "/images/hero.png", description: "Dust-free, biodegradable cotton bedding. Soft on paws, highly absorbent, and perfect for burrowing nests." },
   ];
 
   for (const p of productData) {
-    await db
-      .insert(products)
-      .values({
-        slug: slugify(p.name),
-        name: p.name,
-        description: p.description,
-        shortDescription: p.description.slice(0, 120),
-        price: p.price,
-        mrp: p.mrp,
-        categoryId: catByName[p.cat]?.id ?? null,
-        brandId: brandByName[p.brand]?.id ?? null,
-        petType: p.petType,
-        stock: p.stock,
-        lowStockThreshold: 5,
-        imageUrl: p.imageUrl,
-        isFeatured: p.featured,
-        isBestSeller: p.bestSeller,
-        active: true,
-      })
-      .onConflictDoNothing();
+    const values = {
+      slug: slugify(p.name),
+      name: p.name,
+      description: p.description,
+      shortDescription: p.description.slice(0, 120),
+      price: p.price,
+      mrp: p.mrp,
+      categoryId: catBySlug.get(p.cat)?.id ?? null,
+      brandId: brandByName[p.brand]?.id ?? null,
+      petType: p.petType,
+      stock: p.stock,
+      storeStock: p.storeStock,
+      lifeStages: p.lifeStages,
+      needSlugs: p.needSlugs,
+      lowStockThreshold: 5,
+      imageUrl: p.imageUrl,
+      isFeatured: p.featured,
+      isBestSeller: p.bestSeller,
+      // Auto-ship eligible: recurring-consumable categories (food, treats, litter, hay, supplements)
+      subscriptionEligible: [
+        "dog-puppy-food", "dog-adult-food", "dog-wet-food", "dog-senior-food",
+        "cat-wet-food", "cat-dry-food", "cat-litter", "small-hay-grass",
+        "dog-supplements", "dog-training-treats", "cat-crunchy-treats", "dog-dental-chews",
+      ].includes(p.cat),
+      active: true,
+    };
+    // Update in place if the slug already exists (remaps canonical products into the tree),
+    // otherwise insert.
+    const updated = await db.update(products).set(values).where(eq(products.slug, values.slug)).returning();
+    if (updated.length === 0) {
+      await db.insert(products).values(values).onConflictDoNothing();
+    }
   }
-  console.log("✅ Products seeded.");
+  console.log(`✅ Products seeded/updated (${productData.length}).`);
 
   // 5. Services
   console.log("✂️ Seeding services...");
@@ -163,6 +350,11 @@ async function main() {
         status: "approved",
         isVerified: true,
         featured: pet.name === "Simba",
+        intent: "sale",
+      })
+      .onConflictDoUpdate({
+        target: petListings.slug,
+        set: { status: "approved", isVerified: true, intent: "sale", updatedAt: new Date() },
       })
       .returning();
     await db.insert(listingMedia).values([
@@ -196,6 +388,10 @@ async function main() {
       contactName: "Amit Sharma",
       contactPhone: "+919999999999",
       contactPreference: "platform",
+    })
+    .onConflictDoUpdate({
+      target: petListings.slug,
+      set: { status: "pending_review", intent: "adoption", ownerId: user1.id, updatedAt: new Date() },
     })
     .returning();
   await db.insert(listingMedia).values([

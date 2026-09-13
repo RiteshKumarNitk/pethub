@@ -3,6 +3,7 @@
 import {
   LayoutDashboard, ShoppingBag, Package, Users, Settings, LogOut,
   PawPrint, Calendar, Scissors, MessageCircle, Star, Tag, FileText, Ticket, Tag as TagIcon,
+  RefreshCw, BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 import { Outfit } from "next/font/google";
@@ -16,6 +17,8 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
   { icon: ShoppingBag, label: "Products", href: "/admin/products" },
   { icon: Package, label: "Orders", href: "/admin/orders" },
+  { icon: RefreshCw, label: "Subscriptions", href: "/admin/subscriptions" },
+  { icon: BarChart3, label: "Analytics", href: "/admin/analytics" },
   { icon: PawPrint, label: "Pet Listings", href: "/admin/listings" },
   { icon: Calendar, label: "Bookings", href: "/admin/bookings" },
   { icon: Scissors, label: "Services", href: "/admin/services" },

@@ -3,10 +3,11 @@ import { PawPrint, Phone, Mail, MapPin, ShieldCheck, Clock } from "lucide-react"
 
 const shopLinks = [
   { label: "All Products", href: "/shop" },
-  { label: "Dog Supplies", href: "/shop?petType=dog" },
-  { label: "Cat Supplies", href: "/shop?petType=cat" },
+  { label: "Dog Supplies", href: "/c/dog-food-nutrition" },
+  { label: "Cat Supplies", href: "/c/cat-food" },
+  { label: "Small Pet Supplies", href: "/c/small-food-hay" },
+  { label: "Shop by Need", href: "/shop?view=need" },
   { label: "Best Sellers", href: "/shop?sort=popular" },
-  { label: "Brands", href: "/shop" },
 ];
 
 const petLinks = [
@@ -28,6 +29,13 @@ const learnLinks = [
   { label: "Nutrition", href: "/pet-care" },
   { label: "Grooming Tips", href: "/pet-care" },
   { label: "New Pet-Parent Guide", href: "/pet-care" },
+];
+
+const storeLinks = [
+  { label: "Visit Our Store", href: "/store" },
+  { label: "Store Pickup", href: "/store" },
+  { label: "Opening Hours & Directions", href: "/store" },
+  { label: "In-Store Products", href: "/shop?inStore=true" },
 ];
 
 const companyLinks = [
@@ -64,7 +72,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+      <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-8">
         <div className="col-span-2">
           <Link href="/" className="flex items-center gap-2 mb-3">
             <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center">
@@ -94,6 +102,7 @@ export default function Footer() {
         <FooterCol title="Shop" links={shopLinks} />
         <FooterCol title="Pets" links={petLinks} />
         <FooterCol title="Services" links={serviceLinks} />
+        <FooterCol title="Our Store" links={storeLinks} />
         <FooterCol title="Learn" links={[...learnLinks, ...companyLinks]} />
       </div>
 

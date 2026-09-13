@@ -25,7 +25,9 @@ Single Next.js 14 app (storefront + API + admin) in `backend/`.
 
 ## 2. Run the server
 
-Port: **3000** (project default; verified free — no listener on :3000).
+Port: **3100** (project default is 3000, but on this machine something races the bind and `next dev`
+falls back to a random port — observed repeatedly. Pass an explicit free port instead:
+`npm run dev -- -p 3100`).
 
 ```
 cd backend && npm run dev
@@ -52,6 +54,14 @@ Seeded admin: phone `+911234567890` at `/admin`. Customer login at `/login` (OTP
 ## 3. Start detached (Windows, used for the Preview tab)
 
 ```
-powershell -NoProfile -Command "(Start-Process -FilePath 'npm.cmd' -ArgumentList 'run','dev' -WorkingDirectory '<abs path>/backend' -RedirectStandardOutput '<log>' -RedirectStandardError '<log>.err' -WindowStyle Hidden -PassThru).Id"
+powershell -NoProfile -Command "(Start-Process -FilePath 'npm.cmd' -ArgumentList 'run','dev','--','-p','3100' -WorkingDirectory '<abs path>/backend' -RedirectStandardOutput '<log>' -RedirectStandardError '<log>.err' -WindowStyle Hidden -PassThru).Id"
 ```
+
+- **Sprint 1 taxonomy** — if the target database predates the category tree, apply once with
+  ```
+  cd backend && node --env-file=.env.local scripts/sprint1-taxonomy.cjs
+  ```
+  (adds `categories.parent_id`, the `needs` table, `products.store_stock/life_stages/need_slugs`,
+  `pet_listings.intent`; idempotent). Seed with `npm run db:seed` (runs tsx directly is fine on Windows:
+  `node --env-file=.env.local ./node_modules/tsx/dist/cli.mjs src/db/seed.ts`).
 stdout/stderr MUST go to different files or Start-Process fails. Verify with `Get-Process -Id <pid>`, then `curl http://localhost:3000` until it answers (first compile takes a few seconds).

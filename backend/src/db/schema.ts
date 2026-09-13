@@ -1,5 +1,5 @@
 import { pgTable, text, serial, timestamp, integer, boolean, decimal, jsonb, index, uniqueIndex, time } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // ============ USERS & AUTH ============
 
@@ -10,6 +10,8 @@ export const users = pgTable("users", {
   email: text("email"),
   role: text("role").default("user").notNull(), // user | admin
   isBlocked: boolean("is_blocked").default(false).notNull(),
+  referredBy: text("referred_by"), // referral code of the user who referred them (set once at signup)
+  referralCode: text("referral_code"), // this user's shareable code (assigned lazily)
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -45,10 +47,29 @@ export const categories = pgTable("categories", {
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   petType: text("pet_type").default("all").notNull(), // dog | cat | small_pet | all
+  parentId: integer("parent_id"), // self-reference (tree). null = top-level group (e.g. "Food & Nutrition")
   icon: text("icon"),
+  description: text("description"),
   sortOrder: integer("sort_order").default(0).notNull(),
   active: boolean("active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  parentIdx: index("categories_parent_idx").on(table.parentId),
+}));
+
+/**
+ * Shop-by-Need: cross-pet merchandising facet (job-to-be-done).
+ * Needs group categories across pet types — "New Pet Essentials",
+ * "Tick & Flea", etc. Products reference needs by slug (needSlugs).
+ */
+export const needs = pgTable("needs", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  icon: text("icon"),
+  description: text("description"),
+  sortOrder: integer("sort_order").default(0).notNull(),
+  active: boolean("active").default(true).notNull(),
 });
 
 export const brands = pgTable("brands", {
@@ -71,7 +92,11 @@ export const products = pgTable("products", {
   categoryId: integer("category_id").references(() => categories.id),
   brandId: integer("brand_id").references(() => brands.id),
   petType: text("pet_type").default("all").notNull(),
-  stock: integer("stock").default(0).notNull(),
+  stock: integer("stock").default(0).notNull(), // online inventory
+  storeStock: integer("store_stock").default(0).notNull(), // physical shop shelf inventory (DECISION: separate pool)
+  lifeStages: jsonb("life_stages").$type<string[]>().default([]).notNull(), // puppy|adult|senior / kitten|adult|senior
+  needSlugs: jsonb("need_slugs").$type<string[]>().default([]).notNull(), // shop-by-need facets
+  subscriptionEligible: boolean("subscription_eligible").default(false).notNull(), // food/consumables that can auto-ship
   lowStockThreshold: integer("low_stock_threshold").default(5).notNull(),
   imageUrl: text("image_url"),
   specifications: jsonb("specifications").$type<Record<string, string>>().default({}),
@@ -168,6 +193,9 @@ export const orders = pgTable("orders", {
   paymentMethod: text("payment_method").default("razorpay"),
   razorpayOrderId: text("razorpay_order_id"),
   notes: text("notes"),
+  loyaltyPointsRedeemed: integer("loyalty_points_redeemed").default(0).notNull(), // points applied to this order
+  loyaltyPointsEarned: integer("loyalty_points_earned").default(0).notNull(), // points awarded when paid
+  subscriptionId: integer("subscription_id"), // set when this order belongs to a subscription cycle (no FK: table added later)
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
@@ -231,6 +259,7 @@ export const petListings = pgTable("pet_listings", {
   id: serial("id").primaryKey(),
   slug: text("slug").notNull().unique(),
   listingType: text("listing_type").notNull(), // business | community
+  intent: text("intent").default("sale").notNull(), // sale | adoption (DECISION: one flow, intent field)
   ownerId: integer("owner_id").references(() => users.id, { onDelete: "set null" }), // null for business listings
   name: text("name").notNull(),
   species: text("species").notNull(), // Dog | Cat | Bird | Small Pet | Other
@@ -334,12 +363,18 @@ export const bookings = pgTable("bookings", {
   razorpayOrderId: text("razorpay_order_id"),
   cancelledAt: timestamp("cancelled_at"),
   cancelReason: text("cancel_reason"),
+  reminderSentAt: timestamp("reminder_sent_at"), // T-24h booking reminder marker (dedup for the cron)
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
   dateIdx: index("bookings_date_idx").on(table.bookingDate),
   userIdx: index("bookings_user_idx").on(table.userId),
   statusIdx: index("bookings_status_idx").on(table.status),
+  // Race-safe double-booking prevention: at most one active booking per slot
+  // (cancelled bookings don't count). Enforced by the DB, not just app logic.
+  slotUnique: uniqueIndex("bookings_slot_unique")
+    .on(table.bookingDate, table.slotTime)
+    .where(sql`status <> 'cancelled'`),
 }));
 
 export const bookingBlockouts = pgTable("booking_blockouts", {
@@ -580,6 +615,52 @@ export const blogCategoriesRelations = relations(blogCategories, ({ many }) => (
   blogs: many(blogs),
 }));
 
+// ============ SUBSCRIPTIONS (Sprint 3) ============
+// Auto-ship plans for consumables (food, litter, hay). Admin sets frequency per plan;
+// the customer picks it at purchase. Each cycle creates a normal Razorpay order.
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  productId: integer("product_id").references(() => products.id, { onDelete: "set null" }),
+  variantId: integer("variant_id").references(() => productVariants.id, { onDelete: "set null" }),
+  petId: integer("pet_id").references(() => pets.id, { onDelete: "set null" }),
+  // Product snapshot — survives product rename/deactivation
+  productName: text("product_name").notNull(),
+  variantName: text("variant_name"),
+  imageUrl: text("image_url"),
+  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
+  qty: integer("qty").default(1).notNull(),
+  // Customer address snapshot for delivery
+  shippingAddress: jsonb("shipping_address").$type<{
+    fullName?: string; phone?: string; street: string; landmark?: string;
+    city: string; state: string; zip: string;
+  } | null>(),
+  frequencyDays: integer("frequency_days").default(30).notNull(), // 7|15|30|45|60
+  status: text("status").default("active").notNull(), // active | paused | cancelled
+  nextOrderAt: timestamp("next_order_at").notNull(), // when the next cycle fires
+  lastOrderAt: timestamp("last_order_at"),
+  cancelReason: text("cancel_reason"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index("subscriptions_user_idx").on(table.userId),
+  nextIdx: index("subscriptions_next_idx").on(table.nextOrderAt),
+}));
+
+// ============ LOYALTY (Sprint 3) ============
+// Points ledger. Balance = SUM(points) per user. Earning and redemption are both rows.
+export const loyaltyLedger = pgTable("loyalty_ledger", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  points: integer("points").notNull(), // positive = earned, negative = redeemed
+  kind: text("kind").notNull(), // earn_order | redeem_order | referral_bonus | adjustment
+  orderId: integer("order_id"), // related order (no FK to keep ledger immutable if orders ever purge)
+  note: text("note"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index("loyalty_user_idx").on(table.userId),
+}));
+
 // ============ TYPES ============
 
 export type User = typeof users.$inferSelect;
@@ -609,3 +690,5 @@ export type Blog = typeof blogs.$inferSelect;
 export type BlogCategory = typeof blogCategories.$inferSelect;
 export type Banner = typeof banners.$inferSelect;
 export type Faq = typeof faqs.$inferSelect;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type LoyaltyEntry = typeof loyaltyLedger.$inferSelect;

@@ -12,11 +12,12 @@ import { useCart } from "@/components/Navbar";
 
 interface Product {
   id: number; slug: string; name: string; shortDescription: string | null;
-  price: string; mrp: string | null; stock: number; imageUrl: string | null;
+  price: string; mrp: string | null; stock: number; storeStock: number; imageUrl: string | null;
   categoryName: string | null; brandName: string | null; rating: number; reviewCount: number;
 }
-interface Category { id: number; name: string; slug: string }
+interface Category { id: number; name: string; slug: string; children?: { id: number; name: string; slug: string }[] }
 interface Brand { id: number; name: string; slug: string }
+interface Need { id: number; name: string; slug: string }
 
 const petTypes = [
   { value: "all", label: "All Pets" },
@@ -39,6 +40,7 @@ function ShopContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
+  const [needs, setNeeds] = useState<Need[]>([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -53,6 +55,9 @@ function ShopContent() {
   const search = searchParams.get("search") || "";
   const sort = searchParams.get("sort") || "new";
   const inStock = searchParams.get("inStock") === "true";
+  const inStore = searchParams.get("inStore") === "true";
+  const need = searchParams.get("need") || "";
+  const lifeStage = searchParams.get("lifeStage") || "all";
   const page = parseInt(searchParams.get("page") || "1");
 
   const setParam = (key: string, value: string) => {
@@ -64,11 +69,12 @@ function ShopContent() {
   };
 
   useEffect(() => {
-    fetch("/api/categories")
+    fetch("/api/categories?withNeeds=true")
       .then((r) => r.json())
       .then((d) => {
         setCategories(d.categories || []);
         setBrands(d.brands || []);
+        setNeeds(d.needs || []);
       })
       .catch(() => {});
   }, []);
@@ -81,6 +87,9 @@ function ShopContent() {
     if (brand !== "all") params.set("brand", brand);
     if (search) params.set("search", search);
     if (inStock) params.set("inStock", "true");
+    if (inStore) params.set("inStore", "true");
+    if (need) params.set("need", need);
+    if (lifeStage !== "all") params.set("lifeStage", lifeStage);
     params.set("sort", sort);
     params.set("page", String(page));
     params.set("limit", "12");
@@ -93,7 +102,7 @@ function ShopContent() {
       })
       .catch(() => setProducts([]))
       .finally(() => setLoading(false));
-  }, [category, petType, brand, search, sort, inStock, page]);
+  }, [category, petType, brand, search, sort, inStock, inStore, need, lifeStage, page]);
 
   useEffect(() => { loadProducts(); }, [loadProducts]);
 
@@ -132,7 +141,7 @@ function ShopContent() {
     }
   };
 
-  const hasActiveFilters = category !== "all" || petType !== "all" || brand !== "all" || search || inStock;
+  const hasActiveFilters = category !== "all" || petType !== "all" || brand !== "all" || search || inStock || inStore || need || lifeStage !== "all";
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -140,7 +149,13 @@ function ShopContent() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl md:text-3xl font-black text-gray-900">
-            {search ? `Results for "${search}"` : category !== "all" ? (categories.find((c) => c.slug === category)?.name || "Shop") : "All Products"}
+            {search
+              ? `Results for "${search}"`
+              : need
+                ? needs.find((n) => n.slug === need)?.name || "Shop"
+                : category !== "all"
+                  ? categories.find((c) => c.slug === category)?.name || "Shop"
+                  : "All Products"}
           </h1>
           <p className="text-sm text-gray-500 mt-1">{total} product{total !== 1 ? "s" : ""}</p>
         </div>
@@ -183,6 +198,40 @@ function ShopContent() {
             ))}
           </FilterGroup>
 
+          <FilterGroup title="Shop by Need">
+            {need && (
+              <button
+                onClick={() => setParam("need", "")}
+                className="block w-full text-left px-3 py-1.5 rounded-lg text-sm text-teal-700 font-semibold hover:bg-teal-50"
+              >
+                × Clear need: {needs.find((n) => n.slug === need)?.name}
+              </button>
+            )}
+            <div className="flex flex-wrap gap-1.5 px-1 py-1">
+              {needs.slice(0, 8).map((n) => (
+                <button
+                  key={n.id}
+                  onClick={() => setParam("need", need === n.slug ? "" : n.slug)}
+                  className={`text-xs font-semibold rounded-full px-2.5 py-1 border transition-colors ${need === n.slug ? "bg-teal-600 text-white border-teal-600" : "bg-white text-gray-600 border-gray-200 hover:border-teal-300"}`}
+                >
+                  {n.name}
+                </button>
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Life Stage">
+            {["all", "puppy", "adult", "senior"].map((ls) => (
+              <button
+                key={ls}
+                onClick={() => setParam("lifeStage", ls)}
+                className={`block w-full text-left px-3 py-1.5 rounded-lg text-sm capitalize ${lifeStage === ls ? "bg-orange-50 text-orange-600 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}
+              >
+                {ls === "all" ? "All Life Stages" : ls}
+              </button>
+            ))}
+          </FilterGroup>
+
           <FilterGroup title="Category">
             <button
               onClick={() => setParam("category", "all")}
@@ -191,13 +240,27 @@ function ShopContent() {
               All Categories
             </button>
             {categories.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => setParam("category", c.slug)}
-                className={`block w-full text-left px-3 py-1.5 rounded-lg text-sm ${category === c.slug ? "bg-orange-50 text-orange-600 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}
-              >
-                {c.name}
-              </button>
+              <div key={c.id}>
+                <button
+                  onClick={() => setParam("category", c.slug)}
+                  className={`block w-full text-left px-3 py-1.5 rounded-lg text-sm font-semibold ${category === c.slug ? "bg-orange-50 text-orange-600" : "text-gray-700 hover:bg-gray-50"}`}
+                >
+                  {c.name}
+                </button>
+                {c.children && c.children.length > 0 && (
+                  <div className="ml-3 border-l border-gray-100 pl-2">
+                    {c.children.map((ch) => (
+                      <button
+                        key={ch.id}
+                        onClick={() => setParam("category", ch.slug)}
+                        className={`block w-full text-left px-2.5 py-1 rounded-lg text-[13px] ${category === ch.slug ? "bg-orange-50 text-orange-600 font-semibold" : "text-gray-500 hover:bg-gray-50"}`}
+                      >
+                        {ch.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </FilterGroup>
 
@@ -227,7 +290,16 @@ function ShopContent() {
                 onChange={(e) => setParam("inStock", e.target.checked ? "true" : "")}
                 className="accent-orange-500"
               />
-              In stock only
+              In stock online
+            </label>
+            <label className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={inStore}
+                onChange={(e) => setParam("inStore", e.target.checked ? "true" : "")}
+                className="accent-teal-600"
+              />
+              Available at our store
             </label>
           </FilterGroup>
 
@@ -275,6 +347,7 @@ function ShopContent() {
                           )}
                         </Link>
                         {off > 0 && <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md">{off}% OFF</span>}
+                        {p.storeStock > 0 && <span className="absolute bottom-2 left-2 bg-teal-600/90 text-white text-[10px] font-bold px-2 py-1 rounded-md">At our store</span>}
                         <button
                           onClick={() => toggleWishlist(p.id)}
                           className="absolute top-2 right-2 p-1.5 bg-white/90 rounded-full shadow"

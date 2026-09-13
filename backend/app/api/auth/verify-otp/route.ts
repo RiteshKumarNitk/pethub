@@ -10,7 +10,7 @@ const MAX_VERIFY_ATTEMPTS = 5;
 
 export async function POST(request: NextRequest) {
   try {
-    const { phone, otp, name } = await request.json();
+    const { phone, otp, name, ref } = await request.json();
 
     if (!phone || !otp) {
       return NextResponse.json({ error: "Phone and OTP are required" }, { status: 400 });
@@ -58,6 +58,13 @@ export async function POST(request: NextRequest) {
     await db.delete(otps).where(eq(otps.id, stored.id));
 
     const user = await findOrCreateUser(normalizedPhone, name || stored.name || undefined);
+
+    // Referral capture — first login with a ?ref= code claims the bonus (set-once)
+    const refCode = request.nextUrl.searchParams.get("ref") || ref;
+    if (refCode) {
+      const { applyReferral } = await import("@/lib/loyalty");
+      await applyReferral(user.id, String(refCode)); // idempotent, self-guarded
+    }
 
     if (user.isBlocked) {
       return NextResponse.json({ error: "This account has been suspended. Contact support." }, { status: 403 });

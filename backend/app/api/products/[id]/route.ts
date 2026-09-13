@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { products, productImages, productVariants, categories, brands, reviews, users } from "@/db/schema";
-import { eq, and, or, ne, sql, count, desc } from "drizzle-orm";
+import { eq, and, or, ne, sql, count, desc, inArray } from "drizzle-orm";
 
 /**
  * GET /api/products/[id] — accepts numeric id or slug.
@@ -21,6 +21,7 @@ export async function GET(
         product: products,
         categoryName: categories.name,
         categorySlug: categories.slug,
+        categoryParentId: categories.parentId,
         brandName: brands.name,
         brandSlug: brands.slug,
       })
@@ -81,7 +82,20 @@ export async function GET(
         ),
     ]);
 
-    // Related products: same category first, fallback to same pet type
+    // Related products: prefer siblings in the same leaf category, then the
+    // parent group, then same pet type — so the rail never comes up empty.
+    let relatedCatIds: number[] = [];
+    if (p.categoryId) {
+      relatedCatIds = [p.categoryId];
+      if (product.categoryParentId) relatedCatIds.push(product.categoryParentId);
+      else {
+        const children = await db
+          .select({ id: categories.id })
+          .from(categories)
+          .where(eq(categories.parentId, p.categoryId));
+        relatedCatIds.push(...children.map((c) => c.id));
+      }
+    }
     const related = await db
       .select({
         id: products.id,
@@ -97,10 +111,9 @@ export async function GET(
         and(
           eq(products.active, true),
           ne(products.id, p.id),
-          or(
-            p.categoryId ? eq(products.categoryId, p.categoryId) : undefined,
-            eq(products.petType, p.petType)
-          )!
+          relatedCatIds.length > 0
+            ? or(inArray(products.categoryId, relatedCatIds), eq(products.petType, p.petType))!
+            : eq(products.petType, p.petType)
         )
       )
       .limit(6);
@@ -110,6 +123,7 @@ export async function GET(
         ...p,
         categoryName: product.categoryName,
         categorySlug: product.categorySlug,
+        categoryParentId: product.categoryParentId,
         brandName: product.brandName,
         brandSlug: product.brandSlug,
       },

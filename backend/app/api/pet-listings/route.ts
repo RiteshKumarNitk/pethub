@@ -67,6 +67,7 @@ export async function GET(request: NextRequest) {
         ageMonths: petListings.ageMonths,
         price: petListings.price,
         priceType: petListings.priceType,
+        intent: petListings.intent,
         city: petListings.city,
         vaccinated: petListings.vaccinated,
         isVerified: petListings.isVerified,

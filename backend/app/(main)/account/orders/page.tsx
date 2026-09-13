@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Package, Loader2, ChevronDown, ChevronUp, XCircle, Truck } from "lucide-react";
+import { Package, Loader2, ChevronDown, ChevronUp, XCircle, ShoppingCart, Check } from "lucide-react";
 
 const STATUS_STEPS = ["pending", "paid", "processing", "shipped", "delivered"];
 const STEP_LABELS: Record<string, string> = {
@@ -18,6 +18,8 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [reordering, setReordering] = useState<number | null>(null);
+  const [reorderMsg, setReorderMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   useEffect(() => {
     fetch("/api/orders")
@@ -42,6 +44,30 @@ export default function OrdersPage() {
     }
   };
 
+  const reorder = async (orderId: number) => {
+    setReordering(orderId);
+    setReorderMsg(null);
+    try {
+      const res = await fetch("/api/orders/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      });
+      const d = await res.json();
+      if (res.ok) {
+        const skippedNote = d.skipped?.length ? ` (${d.skipped.length} item${d.skipped.length !== 1 ? "s" : ""} unavailable)` : "";
+        setReorderMsg({ type: "ok", text: `Added ${d.added.length} item${d.added.length !== 1 ? "s" : ""} to your cart${skippedNote}` });
+      } else {
+        setReorderMsg({ type: "err", text: d.error || "Could not reorder" });
+      }
+    } catch {
+      setReorderMsg({ type: "err", text: "Something went wrong. Please try again." });
+    } finally {
+      setReordering(null);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   if (loading) return <div className="flex items-center justify-center py-24"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>;
 
   if (orders.length === 0) {
@@ -57,6 +83,17 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-4">
+      {reorderMsg && (
+        <div className={`flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold ${
+          reorderMsg.type === "ok" ? "bg-teal-50 text-teal-800" : "bg-red-50 text-red-600"
+        }`}>
+          {reorderMsg.type === "ok" ? <Check className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+          {reorderMsg.text}
+          {reorderMsg.type === "ok" && (
+            <a href="/cart" className="ml-auto font-bold underline whitespace-nowrap">Go to cart</a>
+          )}
+        </div>
+      )}
       {orders.map((o) => {
         const isOpen = expanded === o.id;
         const cancelled = o.status === "cancelled";
@@ -149,15 +186,25 @@ export default function OrdersPage() {
                   </div>
                 )}
 
-                {/* Cancel */}
-                {["pending", "paid"].includes(o.status) && (
+                {/* Actions */}
+                <div className="mt-4 flex items-center gap-4">
                   <button
-                    onClick={() => cancelOrder(o.id)}
-                    className="mt-4 text-sm font-semibold text-red-500 hover:text-red-600 flex items-center gap-1.5"
+                    onClick={() => reorder(o.id)}
+                    disabled={reordering === o.id || cancelled}
+                    className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors"
                   >
-                    <XCircle className="w-4 h-4" /> Cancel order
+                    {reordering === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShoppingCart className="w-4 h-4" />}
+                    Buy Again
                   </button>
-                )}
+                  {["pending", "paid"].includes(o.status) && (
+                    <button
+                      onClick={() => cancelOrder(o.id)}
+                      className="text-sm font-semibold text-red-500 hover:text-red-600 flex items-center gap-1.5"
+                    >
+                      <XCircle className="w-4 h-4" /> Cancel order
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>

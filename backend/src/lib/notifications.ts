@@ -4,7 +4,7 @@ import { eq, and, desc, count } from "drizzle-orm";
 
 export type NotificationInput = {
   userId: number;
-  type: "order" | "booking" | "listing" | "inquiry" | "system";
+  type: "order" | "booking" | "listing" | "inquiry" | "loyalty" | "subscription" | "system";
   title: string;
   body: string;
   link?: string;

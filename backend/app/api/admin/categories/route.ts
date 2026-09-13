@@ -29,6 +29,8 @@ export async function POST(request: NextRequest) {
           name,
           slug: slugify(name),
           petType: petType || "all",
+          parentId: body.parentId ? parseInt(body.parentId) : null,
+          description: body.description || null,
           icon: icon || null,
           sortOrder: parseInt(sortOrder) || 0,
         })
@@ -67,6 +69,8 @@ export async function PUT(request: NextRequest) {
         .set({
           ...(name ? { name, slug: slugify(name) } : {}),
           ...(petType ? { petType } : {}),
+          ...(body.parentId !== undefined ? { parentId: body.parentId ? parseInt(body.parentId) : null } : {}),
+          ...(body.description !== undefined ? { description: body.description } : {}),
           ...(icon !== undefined ? { icon } : {}),
           ...(sortOrder !== undefined ? { sortOrder: parseInt(sortOrder) || 0 } : {}),
           ...(active !== undefined ? { active } : {}),

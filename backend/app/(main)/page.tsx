@@ -10,13 +10,14 @@ import {
 import { useCart } from "@/components/Navbar";
 
 interface Product { id: number; slug: string; name: string; price: string; mrp: string | null; imageUrl: string | null; stock: number }
-interface PetCard { id: number; slug: string; name: string; species: string; breed: string | null; ageText: string | null; price: string | null; priceType: string; listingType: string; isVerified: boolean; city: string | null; primaryImage: string | null }
+interface PetCard { id: number; slug: string; name: string; species: string; breed: string | null; ageText: string | null; price: string | null; priceType: string; listingType: string; isVerified: boolean; city: string | null; primaryImage: string | null; intent?: string }
 interface ServiceCard { id: number; slug: string; name: string; price: string; imageUrl: string | null; durationMinutes: number; priceNote: string | null }
 interface Article { title: string; slug: string; excerpt: string | null; thumbnailUrl: string | null; readMinutes: number }
 interface HomeData {
   settings: { storeName: string; tagline: string; storePhone: string; whatsappNumber: string; storeAddress: string; storeHours: string; freeShippingAbove: number };
   heroBanners: { id: number; title: string; subtitle: string | null; description: string | null; ctaLabel: string | null; ctaLink: string | null }[];
   categories: { id: number; name: string; slug: string; icon: string | null }[];
+  needs: { id: number; name: string; slug: string; icon: string | null }[];
   featuredProducts: Product[];
   bestSellers: Product[];
   pets: PetCard[];
@@ -145,16 +146,32 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== SHOP BY PET / CATEGORIES ===== */}
+      {/* ===== SHOP BY NEED ===== */}
+      {data?.needs && data.needs.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-2xl font-black text-gray-900">Shop by Need</h2>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2 snap-x">
+            {data.needs.map((n) => (
+              <Link key={n.id} href={`/shop?need=${n.slug}`} className="flex-shrink-0 snap-start bg-teal-50 border border-teal-100 rounded-xl px-5 py-3.5 shadow-sm hover:border-teal-300 hover:shadow transition-all text-sm font-semibold text-teal-800 hover:text-teal-600 whitespace-nowrap">
+                {n.name}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ===== SHOP BY PET (taxonomy groups) ===== */}
       {data?.categories && data.categories.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-2xl font-black text-gray-900">Shop by Category</h2>
+            <h2 className="text-2xl font-black text-gray-900">Shop by Pet</h2>
             <Link href="/shop" className="text-sm font-semibold text-orange-600 hover:underline flex items-center gap-1">View all <ChevronRight className="w-4 h-4" /></Link>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2 snap-x">
             {data.categories.map((c) => (
-              <Link key={c.id} href={`/shop?category=${c.slug}`} className="flex-shrink-0 snap-start bg-white border border-gray-100 rounded-xl px-5 py-3.5 shadow-sm hover:border-orange-300 hover:shadow transition-all text-sm font-semibold text-gray-700 hover:text-orange-600 whitespace-nowrap">
+              <Link key={c.id} href={`/c/${c.slug}`} className="flex-shrink-0 snap-start bg-white border border-gray-100 rounded-xl px-5 py-3.5 shadow-sm hover:border-orange-300 hover:shadow transition-all text-sm font-semibold text-gray-700 hover:text-orange-600 whitespace-nowrap">
                 {c.name}
               </Link>
             ))}
@@ -361,7 +378,7 @@ function ProductCard({ p, onAdd, added }: { p: Product; onAdd: () => void; added
 
 function PetCardMini({ pet }: { pet: PetCard }) {
   const isBusiness = pet.listingType === "business";
-  const isFree = pet.priceType === "free";
+  const isAdoption = (pet.intent ?? (pet.priceType === "free" || pet.priceType === "adoption_fee" ? "adoption" : "sale")) === "adoption";
   return (
     <Link href={`/pets/${pet.slug}`} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
       <div className="aspect-[4/3] bg-gradient-to-br from-teal-50 to-orange-50 relative">
@@ -375,6 +392,11 @@ function PetCardMini({ pet }: { pet: PetCard }) {
             <BadgeCheck className="w-3 h-3" /> VERIFIED BY US
           </span>
         )}
+        {!isBusiness && isAdoption && (
+          <span className="absolute top-2 left-2 bg-pink-500 text-white text-[9px] font-bold px-2 py-1 rounded-md">
+            FOR ADOPTION
+          </span>
+        )}
       </div>
       <div className="p-3">
         <div className="flex items-center justify-between">
@@ -383,7 +405,13 @@ function PetCardMini({ pet }: { pet: PetCard }) {
         </div>
         <p className="text-xs text-gray-500 mt-0.5">{[pet.breed, pet.ageText].filter(Boolean).join(" · ")}</p>
         <p className="text-sm font-extrabold text-teal-700 mt-1.5">
-          {isFree ? "Free to good home" : pet.price ? `₹${parseFloat(pet.price).toFixed(0)}` : "Enquire"}
+          {isAdoption && !pet.price
+            ? "Free to good home"
+            : isAdoption && pet.price
+              ? `Adoption fee ₹${parseFloat(pet.price).toFixed(0)}`
+              : pet.price
+                ? `₹${parseFloat(pet.price).toFixed(0)}`
+                : "Enquire"}
           <span className="text-xs text-gray-400 font-medium"> {pet.city ? `· ${pet.city}` : ""}</span>
         </p>
       </div>

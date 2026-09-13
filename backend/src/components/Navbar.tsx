@@ -52,14 +52,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 }
 
 const primaryNav = [
-  { label: "Shop", href: "/shop", icon: Store },
   { label: "Pets", href: "/pets", icon: PawPrint },
   { label: "Services", href: "/services", icon: Scissors },
   { label: "Sell / Rehome", href: "/sell-rehome", icon: Heart },
   { label: "Pet Care", href: "/pet-care", icon: null },
-  { label: "About", href: "/about", icon: null },
-  { label: "Contact", href: "/contact", icon: null },
+  { label: "Store", href: "/store", icon: null },
 ];
+
+interface NavCategory { id: number; name: string; slug: string; petType: string }
+interface NavNeed { id: number; name: string; slug: string }
 
 export default function Navbar() {
   const router = useRouter();
@@ -69,7 +70,21 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [shopOpen, setShopOpen] = useState(false);
+  const [shopTree, setShopTree] = useState<NavCategory[]>([]);
+  const [shopNeeds, setShopNeeds] = useState<NavNeed[]>([]);
   const { count } = useCart();
+
+  // Taxonomy tree for the Shop dropdown (pet type → groups)
+  useEffect(() => {
+    fetch("/api/categories?withNeeds=true&withChildren=false")
+      .then((r) => r.json())
+      .then((d) => {
+        setShopTree(d.categories || []);
+        setShopNeeds(d.needs || []);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -129,6 +144,70 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden lg:flex items-center gap-5">
+          {/* Shop mega-dropdown: Pet type → taxonomy groups + Shop by Need */}
+          <div
+            className="relative"
+            onMouseEnter={() => setShopOpen(true)}
+            onMouseLeave={() => setShopOpen(false)}
+          >
+            <Link
+              href="/shop"
+              onClick={() => setShopOpen(false)}
+              className={`flex items-center gap-1 text-sm font-medium transition-colors ${
+                pathname.startsWith("/shop") || pathname.startsWith("/c/") || shopOpen
+                  ? "text-orange-600"
+                  : "text-gray-600 hover:text-orange-600"
+              }`}
+            >
+              Shop
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${shopOpen ? "rotate-180" : ""}`} />
+            </Link>
+            {shopOpen && (
+              <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 z-50">
+                <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-6 w-[760px] grid grid-cols-4 gap-6">
+                  {([
+                    ["Dogs", "dog"],
+                    ["Cats", "cat"],
+                    ["Small Pets", "small_pet"],
+                  ] as const).map(([label, pt]) => (
+                    <div key={pt}>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{label}</p>
+                      <div className="space-y-0.5">
+                        {shopTree
+                          .filter((c) => c.petType === pt)
+                          .map((c) => (
+                            <Link
+                              key={c.id}
+                              href={`/c/${c.slug}`}
+                              onClick={() => setShopOpen(false)}
+                              className="block px-2 py-1 rounded-lg text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                            >
+                              {c.name}
+                            </Link>
+                          ))}
+                      </div>
+                    </div>
+                  ))}
+                  <div>
+                    <p className="text-xs font-bold text-teal-500 uppercase tracking-wider mb-2">Shop by Need</p>
+                    <div className="space-y-0.5">
+                      {shopNeeds.map((n) => (
+                        <Link
+                          key={n.id}
+                          href={`/shop?need=${n.slug}`}
+                          onClick={() => setShopOpen(false)}
+                          className="block px-2 py-1 rounded-lg text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-700"
+                        >
+                          {n.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {primaryNav.map((link) => (
             <Link
               key={link.label}
@@ -251,6 +330,38 @@ export default function Navbar() {
               <Search className="w-4 h-4" />
             </button>
           </form>
+          {/* Shop entry + pet-type shortcuts (taxonomy, mobile) */}
+          <Link href="/shop" className="block px-3 py-2.5 rounded-lg text-sm font-bold text-orange-600 hover:bg-orange-50">
+            Shop All Products
+          </Link>
+          <div className="grid grid-cols-3 gap-1.5 pb-1">
+            {([
+              ["Dogs", "dog"],
+              ["Cats", "cat"],
+              ["Small Pets", "small_pet"],
+            ] as const).map(([label, pt]) => (
+              <Link
+                key={pt}
+                href={`/shop?petType=${pt}`}
+                className="text-center text-xs font-semibold bg-orange-50 text-orange-700 rounded-lg px-2 py-2 hover:bg-orange-100"
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+          {shopNeeds.length > 0 && (
+            <div className="flex gap-1.5 overflow-x-auto pb-1">
+              {shopNeeds.slice(0, 6).map((n) => (
+                <Link
+                  key={n.id}
+                  href={`/shop?need=${n.slug}`}
+                  className="flex-shrink-0 text-xs font-semibold bg-teal-50 text-teal-700 rounded-full px-3 py-1.5 hover:bg-teal-100"
+                >
+                  {n.name}
+                </Link>
+              ))}
+            </div>
+          )}
           {primaryNav.map((link) => (
             <Link key={link.label} href={link.href} className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600">
               {link.label}

@@ -45,8 +45,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       id, name, description, shortDescription, price, mrp, categoryId, brandId,
-      petType, stock, lowStockThreshold, imageUrl, images, specifications,
-      weightGrams, isFeatured, isBestSeller, taxRatePercent, active,
+      petType, stock, storeStock, lifeStages, needSlugs, lowStockThreshold, subscriptionEligible,
+      imageUrl, images, specifications, weightGrams, isFeatured, isBestSeller,
+      taxRatePercent, active,
     } = body;
 
     if (!name || !price) {
@@ -63,6 +64,10 @@ export async function POST(request: NextRequest) {
       brandId: brandId ? parseInt(brandId) : null,
       petType: petType || "all",
       stock: parseInt(stock) || 0,
+      storeStock: storeStock !== undefined ? parseInt(storeStock) || 0 : 0,
+      subscriptionEligible: subscriptionEligible === true || subscriptionEligible === "true",
+      lifeStages: Array.isArray(lifeStages) ? lifeStages : [],
+      needSlugs: Array.isArray(needSlugs) ? needSlugs : [],
       lowStockThreshold: lowStockThreshold !== undefined ? parseInt(lowStockThreshold) || 5 : 5,
       imageUrl: imageUrl || null,
       specifications: specifications || {},

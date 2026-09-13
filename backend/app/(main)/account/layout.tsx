@@ -5,13 +5,15 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Dog, ShoppingBag, Calendar, Heart, Tag,
-  Settings, LogOut, MapPin, Bell, Loader2,
+  Settings, LogOut, MapPin, Bell, Loader2, RefreshCw, Gift,
 } from "lucide-react";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Overview", href: "/account" },
   { icon: Dog, label: "My Pets", href: "/account/pets" },
   { icon: ShoppingBag, label: "Orders", href: "/account/orders" },
+  { icon: RefreshCw, label: "Subscriptions", href: "/account/subscriptions" },
+  { icon: Gift, label: "Rewards", href: "/account/rewards" },
   { icon: Calendar, label: "Bookings", href: "/account/bookings" },
   { icon: Tag, label: "My Listings", href: "/account/listings" },
   { icon: Heart, label: "Wishlist", href: "/account/wishlist" },

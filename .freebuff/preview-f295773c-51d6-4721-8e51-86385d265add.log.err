@@ -1,0 +1,347 @@
+Categories GET error: NeonDbError: Error connecting to database: fetch failed
+    at execute (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\@neondatabase\serverless\index.js:1548:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async NeonHttpPreparedQuery.execute (webpack-internal:///(rsc)/./node_modules/drizzle-orm/neon-http/session.js:45:24)
+    at async GET (webpack-internal:///(rsc)/./app/api/categories/route.ts:26:21)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:63809
+    at async eU.execute (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:53964)
+    at async eU.handle (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:65062)
+    at async doRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1333:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1555:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1463:28)
+    at async DevServer.renderPageComponent (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1856:24)
+    at async DevServer.renderToResponseImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1894:32)
+    at async DevServer.pipeImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:911:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\next-server.js:271:17)
+    at async DevServer.handleRequestImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:807:17)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:331:20
+    at async Span.traceAsyncFn (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\trace\trace.js:151:20)
+    at async DevServer.handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:328:24)
+    at async invokeRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:163:21)
+    at async handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:342:24)
+    at async requestHandlerImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:366:13)
+    at async Server.requestListener (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\start-server.js:140:13) {
+  severity: undefined,
+  code: undefined,
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined,
+  sourceError: [TypeError: fetch failed] {
+    [cause]: Error: getaddrinfo ENOTFOUND api.us-east-1.aws.neon.tech
+        at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26) {
+      errno: -3008,
+      code: 'ENOTFOUND',
+      syscall: 'getaddrinfo',
+      hostname: 'api.us-east-1.aws.neon.tech'
+    }
+  }
+}
+Cart GET error: NeonDbError: Error connecting to database: fetch failed
+    at execute (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\@neondatabase\serverless\index.js:1548:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async NeonHttpPreparedQuery.execute (webpack-internal:///(rsc)/./node_modules/drizzle-orm/neon-http/session.js:45:24)
+    at async resolveCart (webpack-internal:///(rsc)/./app/api/cart/route.ts:61:28)
+    at async GET (webpack-internal:///(rsc)/./app/api/cart/route.ts:74:22)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:63809
+    at async eU.execute (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:53964)
+    at async eU.handle (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:65062)
+    at async doRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1333:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1555:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1463:28)
+    at async DevServer.renderPageComponent (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1856:24)
+    at async DevServer.renderToResponseImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1894:32)
+    at async DevServer.pipeImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:911:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\next-server.js:271:17)
+    at async DevServer.handleRequestImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:807:17)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:331:20
+    at async Span.traceAsyncFn (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\trace\trace.js:151:20)
+    at async DevServer.handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:328:24)
+    at async invokeRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:163:21)
+    at async handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:342:24)
+    at async requestHandlerImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:366:13)
+    at async Server.requestListener (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\start-server.js:140:13) {
+  severity: undefined,
+  code: undefined,
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined,
+  sourceError: [TypeError: fetch failed] {
+    [cause]: Error: getaddrinfo ENOTFOUND api.us-east-1.aws.neon.tech
+        at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26) {
+      errno: -3008,
+      code: 'ENOTFOUND',
+      syscall: 'getaddrinfo',
+      hostname: 'api.us-east-1.aws.neon.tech'
+    }
+  }
+}
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3100". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3100". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⨯ Error: An unsupported type was passed to use(): [object Object]
+    at PetDetailPage (pets/[slug]/page.tsx:28:64)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ app\(main)\pets\[slug]\page.tsx (28:19) @ use
+ ⨯ ReferenceError: use is not defined
+    at PetDetailPage (pets/[slug]/page.tsx:28:22)
+[0m [90m 26 |[39m[0m
+[0m [90m 27 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mPetDetailPage[39m({ params }[33m:[39m { params[33m:[39m [33mPromise[39m[33m<[39m{ slug[33m:[39m string }[33m>[39m }) {[0m
+[0m[31m[1m>[22m[39m[90m 28 |[39m   [36mconst[39m { slug } [33m=[39m use(params)[33m;[39m[0m
+[0m [90m    |[39m                   [31m[1m^[22m[39m[0m
+[0m [90m 29 |[39m   [36mconst[39m [data[33m,[39m setData] [33m=[39m useState[33m<[39m[33mDetail[39m [33m|[39m [36mnull[39m[33m>[39m([36mnull[39m)[33m;[39m[0m
+[0m [90m 30 |[39m   [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m[0m
+[0m [90m 31 |[39m   [36mconst[39m [notFound[33m,[39m setNotFound] [33m=[39m useState([36mfalse[39m)[33m;[39m[0m
+ ⨯ app\(main)\pets\[slug]\page.tsx (28:19) @ use
+ ⨯ ReferenceError: use is not defined
+    at PetDetailPage (pets/[slug]/page.tsx:28:22)
+[0m [90m 26 |[39m[0m
+[0m [90m 27 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mPetDetailPage[39m({ params }[33m:[39m { params[33m:[39m [33mPromise[39m[33m<[39m{ slug[33m:[39m string }[33m>[39m }) {[0m
+[0m[31m[1m>[22m[39m[90m 28 |[39m   [36mconst[39m { slug } [33m=[39m use(params)[33m;[39m[0m
+[0m [90m    |[39m                   [31m[1m^[22m[39m[0m
+[0m [90m 29 |[39m   [36mconst[39m [data[33m,[39m setData] [33m=[39m useState[33m<[39m[33mDetail[39m [33m|[39m [36mnull[39m[33m>[39m([36mnull[39m)[33m;[39m[0m
+[0m [90m 30 |[39m   [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m[0m
+[0m [90m 31 |[39m   [36mconst[39m [notFound[33m,[39m setNotFound] [33m=[39m useState([36mfalse[39m)[33m;[39m[0m
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3100". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3100". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+Admin Stats GET error: NeonDbError: Error connecting to database: fetch failed
+    at execute (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\@neondatabase\serverless\index.js:1548:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async NeonHttpPreparedQuery.execute (webpack-internal:///(rsc)/./node_modules/drizzle-orm/neon-http/session.js:45:24)
+    at async Promise.all (index 5)
+    at async GET (webpack-internal:///(rsc)/./app/api/admin/stats/route.ts:123:116)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:63809
+    at async eU.execute (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:53964)
+    at async eU.handle (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:65062)
+    at async doRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1333:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1555:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1463:28)
+    at async DevServer.renderPageComponent (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1856:24)
+    at async DevServer.renderToResponseImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1894:32)
+    at async DevServer.pipeImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:911:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\next-server.js:271:17)
+    at async DevServer.handleRequestImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:807:17)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:331:20
+    at async Span.traceAsyncFn (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\trace\trace.js:151:20)
+    at async DevServer.handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:328:24)
+    at async invokeRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:163:21)
+    at async handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:342:24)
+    at async requestHandlerImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:366:13)
+    at async Server.requestListener (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\start-server.js:140:13) {
+  severity: undefined,
+  code: undefined,
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined,
+  sourceError: [TypeError: fetch failed] {
+    [cause]: Error: getaddrinfo ENOTFOUND api.us-east-1.aws.neon.tech
+        at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26) {
+      errno: -3008,
+      code: 'ENOTFOUND',
+      syscall: 'getaddrinfo',
+      hostname: 'api.us-east-1.aws.neon.tech'
+    }
+  }
+}
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3100". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3100". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3100". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ⨯ NeonDbError: Error connecting to database: fetch failed
+    at async Promise.all (index 0)
+    at async StorePage (store/page.tsx:57:46)
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3100". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+Create order error: Error: No transactions support in neon-http driver
+    at NeonHttpSession.transaction (webpack-internal:///(rsc)/./node_modules/drizzle-orm/neon-http/session.js:121:15)
+    at NeonHttpDatabase.transaction (webpack-internal:///(rsc)/./node_modules/drizzle-orm/pg-core/db.js:276:29)
+    at POST (webpack-internal:///(rsc)/./app/api/orders/route.ts:193:67)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:63809
+    at async eU.execute (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:53964)
+    at async eU.handle (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:65062)
+    at async doRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1333:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1555:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1463:28)
+    at async DevServer.renderPageComponent (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1856:24)
+    at async DevServer.renderToResponseImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1894:32)
+    at async DevServer.pipeImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:911:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\next-server.js:271:17)
+    at async DevServer.handleRequestImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:807:17)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:331:20
+    at async Span.traceAsyncFn (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\trace\trace.js:151:20)
+    at async DevServer.handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:328:24)
+    at async invokeRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:163:21)
+    at async handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:342:24)
+    at async requestHandlerImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:366:13)
+    at async Server.requestListener (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\start-server.js:140:13)
+Create order error: Error: No transactions support in neon-http driver
+    at NeonHttpSession.transaction (webpack-internal:///(rsc)/./node_modules/drizzle-orm/neon-http/session.js:121:15)
+    at NeonHttpDatabase.transaction (webpack-internal:///(rsc)/./node_modules/drizzle-orm/pg-core/db.js:276:29)
+    at POST (webpack-internal:///(rsc)/./app/api/orders/route.ts:193:67)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:63809
+    at async eU.execute (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:53964)
+    at async eU.handle (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:65062)
+    at async doRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1333:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1555:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1463:28)
+    at async DevServer.renderPageComponent (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1856:24)
+    at async DevServer.renderToResponseImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1894:32)
+    at async DevServer.pipeImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:911:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\next-server.js:271:17)
+    at async DevServer.handleRequestImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:807:17)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:331:20
+    at async Span.traceAsyncFn (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\trace\trace.js:151:20)
+    at async DevServer.handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:328:24)
+    at async invokeRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:163:21)
+    at async handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:342:24)
+    at async requestHandlerImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:366:13)
+    at async Server.requestListener (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\start-server.js:140:13)
+Create order error: Error: No transactions support in neon-http driver
+    at NeonHttpSession.transaction (webpack-internal:///(rsc)/./node_modules/drizzle-orm/neon-http/session.js:121:15)
+    at NeonHttpDatabase.transaction (webpack-internal:///(rsc)/./node_modules/drizzle-orm/pg-core/db.js:276:29)
+    at POST (webpack-internal:///(rsc)/./app/api/orders/route.ts:193:67)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:63809
+    at async eU.execute (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:53964)
+    at async eU.handle (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:65062)
+    at async doRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1333:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1555:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1463:28)
+    at async DevServer.renderPageComponent (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1856:24)
+    at async DevServer.renderToResponseImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1894:32)
+    at async DevServer.pipeImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:911:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\next-server.js:271:17)
+    at async DevServer.handleRequestImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:807:17)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:331:20
+    at async Span.traceAsyncFn (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\trace\trace.js:151:20)
+    at async DevServer.handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:328:24)
+    at async invokeRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:163:21)
+    at async handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:342:24)
+    at async requestHandlerImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:366:13)
+    at async Server.requestListener (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\start-server.js:140:13)
+Create order error: TypeError: client.query is not a function
+    at eval (webpack-internal:///(rsc)/./node_modules/drizzle-orm/node-postgres/session.js:69:31)
+    at Object.startActiveSpan (webpack-internal:///(rsc)/./node_modules/drizzle-orm/tracing.js:14:20)
+    at eval (webpack-internal:///(rsc)/./node_modules/drizzle-orm/node-postgres/session.js:63:82)
+    at Object.startActiveSpan (webpack-internal:///(rsc)/./node_modules/drizzle-orm/tracing.js:14:20)
+    at NodePgPreparedQuery.execute (webpack-internal:///(rsc)/./node_modules/drizzle-orm/node-postgres/session.js:49:64)
+    at eval (webpack-internal:///(rsc)/./node_modules/drizzle-orm/pg-core/query-builders/select.js:706:40)
+    at Object.startActiveSpan (webpack-internal:///(rsc)/./node_modules/drizzle-orm/tracing.js:14:20)
+    at PgSelectBase.execute (webpack-internal:///(rsc)/./node_modules/drizzle-orm/pg-core/query-builders/select.js:705:68)
+    at PgSelectBase.then (webpack-internal:///(rsc)/./node_modules/drizzle-orm/query-promise.js:28:21)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+(node:17708) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Razorpay order creation failed: {
+  statusCode: 401,
+  error: { description: 'Authentication failed', code: 'BAD_REQUEST_ERROR' }
+}
+Apply referral failed: Error: getaddrinfo ENOTFOUND ep-cool-bonus-a4quez7i-pooler.us-east-1.aws.neon.tech
+    at C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async eval (webpack-internal:///(rsc)/./node_modules/drizzle-orm/node-postgres/session.js:63:28)
+    at async applyReferral (webpack-internal:///(rsc)/./src/lib/loyalty.ts:193:24)
+    at async POST (webpack-internal:///(rsc)/./app/api/rewards/route.ts:69:24)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:63809
+    at async eU.execute (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:53964)
+    at async eU.handle (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:65062)
+    at async doRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1333:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1555:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1463:28)
+    at async DevServer.renderPageComponent (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1856:24)
+    at async DevServer.renderToResponseImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1894:32)
+    at async DevServer.pipeImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:911:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\next-server.js:271:17)
+    at async DevServer.handleRequestImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:807:17)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:331:20
+    at async Span.traceAsyncFn (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\trace\trace.js:151:20)
+    at async DevServer.handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:328:24)
+    at async invokeRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:163:21)
+    at async handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:342:24)
+    at async requestHandlerImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:366:13)
+    at async Server.requestListener (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\start-server.js:140:13) {
+  errno: -3008,
+  code: 'ENOTFOUND',
+  syscall: 'getaddrinfo',
+  hostname: 'ep-cool-bonus-a4quez7i-pooler.us-east-1.aws.neon.tech'
+}
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3100". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3100". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+getSettings failed, using defaults: Error: getaddrinfo ENOTFOUND ep-cool-bonus-a4quez7i-pooler.us-east-1.aws.neon.tech
+    at C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async eval (webpack-internal:///(rsc)/./node_modules/drizzle-orm/node-postgres/session.js:63:28)
+    at async getSettings (webpack-internal:///(rsc)/./src/lib/settings.ts:55:22)
+    at async POST (webpack-internal:///(rsc)/./app/api/bookings/route.ts:104:26)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:63809
+    at async eU.execute (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:53964)
+    at async eU.handle (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:65062)
+    at async doRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1333:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1555:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1463:28)
+    at async DevServer.renderPageComponent (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1856:24)
+    at async DevServer.renderToResponseImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:1894:32)
+    at async DevServer.pipeImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:911:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\next-server.js:271:17)
+    at async DevServer.handleRequestImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\base-server.js:807:17)
+    at async C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:331:20
+    at async Span.traceAsyncFn (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\trace\trace.js:151:20)
+    at async DevServer.handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\dev\next-dev-server.js:328:24)
+    at async invokeRender (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:163:21)
+    at async handleRequest (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:342:24)
+    at async requestHandlerImpl (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\router-server.js:366:13)
+    at async Server.requestListener (C:\Users\ADMIN\Documents\github ritesh\pethub\backend\node_modules\next\dist\server\lib\start-server.js:140:13) {
+  errno: -3008,
+  code: 'ENOTFOUND',
+  syscall: 'getaddrinfo',
+  hostname: 'ep-cool-bonus-a4quez7i-pooler.us-east-1.aws.neon.tech'
+}

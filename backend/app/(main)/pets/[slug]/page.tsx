@@ -1,8 +1,9 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import {
   PawPrint, BadgeCheck, Users, MapPin, ShieldCheck, Heart, Flag,
   Syringe, Sparkles, Phone, Mail, ChevronRight, Loader2, Check, MessageCircle,
@@ -12,7 +13,7 @@ interface Detail {
   listing: {
     id: number; slug: string; listingType: string; name: string; species: string; breed: string | null;
     gender: string | null; ageText: string | null; ageMonths: number | null; color: string | null; size: string | null;
-    price: string | null; priceType: string; city: string | null; state: string | null;
+    price: string | null; priceType: string; intent?: string; city: string | null; state: string | null;
     description: string | null; temperament: string | null; healthInfo: string | null;
     vaccinated: boolean; vaccinationDetails: string | null; videoUrl: string | null;
     isVerified: boolean; viewCount: number; featured: boolean; createdAt: string;
@@ -23,8 +24,8 @@ interface Detail {
   related: { id: number; slug: string; name: string; species: string; breed: string | null; ageText: string | null; price: string | null; listingType: string; isVerified: boolean }[];
 }
 
-export default function PetDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params);
+export default function PetDetailPage() {
+  const { slug = "" } = (useParams() as { slug?: string }) ?? {};
   const [data, setData] = useState<Detail | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -66,6 +67,7 @@ export default function PetDetailPage({ params }: { params: Promise<{ slug: stri
   const { listing: l, media, related } = data;
   const isBusiness = l.listingType === "business";
   const isFree = l.priceType === "free";
+  const isAdoption = (l.intent ?? (isFree || l.priceType === "adoption_fee" ? "adoption" : "sale")) === "adoption";
   const gallery = media.filter((m) => m.type === "image");
 
   const submitEnquiry = async (e: React.FormEvent) => {
@@ -125,7 +127,7 @@ export default function PetDetailPage({ params }: { params: Promise<{ slug: stri
               <div className="w-full h-full flex items-center justify-center"><PawPrint className="w-16 h-16 text-gray-300" /></div>
             )}
             <span className={`absolute top-4 left-4 text-[10px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 ${isBusiness ? "bg-teal-600 text-white" : "bg-white text-gray-700 border border-gray-200"}`}>
-              {isBusiness ? <><BadgeCheck className="w-3.5 h-3.5" /> VERIFIED BY OUR SHOP</> : <><Users className="w-3.5 h-3.5" /> COMMUNITY LISTING</>}
+              {isBusiness ? <><BadgeCheck className="w-3.5 h-3.5" /> VERIFIED BY OUR SHOP</> : <><Users className="w-3.5 h-3.5" /> COMMUNITY LISTING{isAdoption ? " · FOR ADOPTION" : ""}</>}
             </span>
           </div>
           {gallery.length > 1 && (
